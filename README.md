@@ -27,16 +27,7 @@
 ### Требования
 
 - Docker & Docker Compose
-- Переменные окружения:
-
-```bash
-export ADMIN_EMAIL=<email администратора по умолчанию>
-export MAIL_USERNAME=<SMTP username>
-export MAIL_PASSWORD=<SMTP password>
-export ACCESS_TOKEN_DURATION=<Время жизни access токена в милисекундах> # рекомендую 900000
-export REFRESH_TOKEN_DURATION=<Время жизни refresh токена в милисекундах> # рекомендую 2592000000
-export FRONT_URL=<http://localhost:5173> # или укажите свой
-```
+- Переменные окружения лежат в .env файле
 
 ### Запуск
 

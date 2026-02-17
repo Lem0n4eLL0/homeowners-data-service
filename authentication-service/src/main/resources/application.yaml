@@ -1,0 +1,88 @@
+server:
+  port: 8081
+spring:
+  profiles:
+    active: ${ACTIVE_PROFILE}
+  application:
+    name: authentication-service
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST:localhost}
+    properties:
+      retries: 10
+      retry.backoff.ms: 2000
+    admin:
+      properties:
+        offsets.topic.replication-factor: 1
+        transactions.state.log.replication-factor: 1
+        transactions.state.log.min.isr: 1
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: 0
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}/${POSTGRES_DB}
+    driver-class-name: org.postgresql.Driver
+    username: ${POSTGRES_USERNAME:admin}
+    password: ${POSTGRES_PASSWORD:admin}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    show-sql: true
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+jwt:
+  private-key-path: ${PRIVATE_KEY}
+  public-key-path: ${PUBLIC_KEY}
+  access:
+    expiration: ${ACCESS_TOKEN_DURATION}
+  refresh:
+    expiration: ${REFRESH_TOKEN_DURATION}
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+app:
+  security:
+    otp:
+      hmac-secret: ${OTP_HMAC_SECRET_FILE}
+  domain: http://localhost:8080
+  version: 1
+
+
+# -----------------------------
+# Dev профиль — DEBUG
+# -----------------------------
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    root: DEBUG
+    ru.zeker: DEBUG
+
+# -----------------------------
+# Prod профиль — INFO
+# -----------------------------
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  level:
+    root: INFO
+    ru.zeker: INFO

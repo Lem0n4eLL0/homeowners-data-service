@@ -1,0 +1,116 @@
+spring:
+  profiles:
+    active: ${ACTIVE_PROFILE}
+  application:
+    name: api-gateway
+  main:
+    web-application-type: reactive
+
+  cloud:
+    gateway:
+      # === CORS для фронта ===
+      server:
+        webflux:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origin-patterns: "http://localhost:*"
+                allowed-methods: "*"
+                allowed-headers: "*"
+                exposed-headers:
+                  - Authorization
+                  - User-Name
+                  - User-Role
+                  - Set-Cookie
+                allow-credentials: true
+                max-age: 3600
+          routes:
+                    # === AUTH SERVICE ===
+                    - id: authentication-service-auth
+                      uri: http://authentication-service:8081
+                      predicates:
+                        - Path=/api/v${app.version}/auth/**
+                      filters:
+                        - StripPrefix=2
+                      metadata:
+                        auth-required: false
+
+                    - id: authentication-service-users
+                      uri: http://authentication-service:8081
+                      predicates:
+                        - Path=/api/v${app.version}/accounts/**
+                      filters:
+                        - StripPrefix=2
+
+                    # === Swagger passthrough ===
+                    - id: authentication-service-docs
+                      uri: http://authentication-service:8081
+                      predicates:
+                        - Path=/authentication-service/v3/api-docs/**
+                      filters:
+                        - StripPrefix=1
+                      metadata:
+                        auth-required: false
+                      order: -1
+
+                    - id: authentication-service-docs-swagger
+                      uri: http://authentication-service:8081
+                      predicates:
+                        - Path=/authentication-service/swagger-ui.html
+                      filters:
+                        - StripPrefix=1
+                      metadata:
+                        auth-required: false
+                      order: -1
+
+server:
+  port: 8080
+
+jwt:
+  public-key-path: ${PUBLIC_KEY}
+  access:
+    expiration: ${ACCESS_TOKEN_DURATION}
+  refresh:
+    expiration: ${REFRESH_TOKEN_DURATION}
+
+app:
+  version: 1
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      - name: authentication-service
+        url: /authentication-service/v3/api-docs
+
+# -----------------------------
+# Dev профиль — DEBUG
+# -----------------------------
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    root: DEBUG
+    ru.zeker: DEBUG
+
+# -----------------------------
+# Prod профиль — INFO
+# -----------------------------
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  level:
+    root: INFO
+    ru.zeker: INFO

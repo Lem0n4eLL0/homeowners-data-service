@@ -1,0 +1,134 @@
+package ru.zeker.gateway.component;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.cloud.gateway.route.Route;
+import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
+import org.springframework.core.Ordered;
+import org.springframework.core.ResolvableType;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.json.Jackson2JsonEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import ru.zeker.common.exception.AuthException;
+import ru.zeker.common.exception.ErrorCode;
+
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import static ru.zeker.common.headers.AppHeaders.ACCOUNT_ID;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class JwtValidationFilter implements GlobalFilter, Ordered {
+    private static final String BEARER_PREFIX = "Bearer ";
+    private static final String AUTH_REQUIRED_KEY = "auth-required";
+
+    private final GatewayJwt jwtUtils;
+    private final Jackson2JsonEncoder jsonEncoder;
+
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        return isAuthRequired(exchange)
+                .flatMap(required -> required
+                        ? extractClaims(exchange)
+                        .flatMap(claims -> chain.filter(withUserHeaders(exchange, claims)))
+                        : chain.filter(exchange)
+                )
+                .onErrorResume(AuthException.class, ex -> writeError(exchange, ex));
+    }
+
+    private Mono<Boolean> isAuthRequired(ServerWebExchange exchange) {
+        var route = (Route) exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR);
+        var required = Optional.ofNullable(route)
+                .map(Route::getMetadata)
+                .map(meta -> meta.get(AUTH_REQUIRED_KEY))
+                .map(Object::toString)
+                .map(JwtValidationFilter::parseBooleanFalse)
+                .orElse(Boolean.TRUE);
+        return Mono.just(required);
+    }
+
+    private Mono<Claims> extractClaims(ServerWebExchange exchange) {
+        var authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (StringUtils.isBlank(authHeader) || !StringUtils.startsWith(authHeader, BEARER_PREFIX)) {
+            return Mono.error(new AuthException("Authorization header missing", HttpStatus.UNAUTHORIZED));
+        }
+
+        var token = authHeader.substring(BEARER_PREFIX.length());
+
+        return Mono.fromCallable(() -> {
+                    try {
+                        if (jwtUtils.isTokenExpired(token)) {
+                            throw new AuthException("The token has expired", ErrorCode.TOKEN_EXPIRED);
+                        }
+                        return jwtUtils.extractAllClaims(token);
+                    } catch (AuthException e) {
+                        log.warn(e.getMessage());
+                        throw e;
+                    } catch (ExpiredJwtException e) {
+                        log.warn(e.getMessage());
+                        throw new AuthException("The token has expired", ErrorCode.TOKEN_EXPIRED);
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                        throw new AuthException("Invalid token", HttpStatus.UNAUTHORIZED);
+                    }
+                })
+                .subscribeOn(Schedulers.boundedElastic());
+    }
+
+    private ServerWebExchange withUserHeaders(ServerWebExchange exchange, Claims claims) {
+        var mutated = exchange.getRequest().mutate()
+                .header(ACCOUNT_ID, jwtUtils.getAccountId(claims))
+                .headers(headers -> headers.remove(HttpHeaders.AUTHORIZATION))
+                .build();
+        return exchange.mutate().request(mutated).build();
+    }
+
+
+    private Mono<Void> writeError(ServerWebExchange exchange, AuthException ex) {
+        var response = exchange.getResponse();
+        response.setStatusCode(ex.getStatus());
+        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+
+        var body = new LinkedHashMap<>();
+        body.put("timestamp", Instant.now().toString());
+        body.put("path", exchange.getRequest().getPath().toString());
+        body.put("status", ex.getStatus().value());
+        body.put("error", ex.getStatus().getReasonPhrase());
+        body.put("errorCode", ex.getErrorCode());
+        body.put("message", ex.getMessage());
+
+        return response.writeWith(
+                jsonEncoder.encode(
+                        Mono.just(body),
+                        response.bufferFactory(),
+                        ResolvableType.forClassWithGenerics(Map.class, String.class, Object.class),
+                        MediaType.APPLICATION_JSON,
+                        null
+                )
+        );
+    }
+
+
+    @Override
+    public int getOrder() {
+        return Ordered.HIGHEST_PRECEDENCE;
+    }
+
+    private static Boolean parseBooleanFalse(String str) {
+        return !StringUtils.equalsIgnoreCase("false", str);
+    }
+}

@@ -1,0 +1,67 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-accounts-table
+      author: zeker
+      changes:
+        - createTable:
+            tableName: accounts
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: "CURRENT_TIMESTAMP"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: "CURRENT_TIMESTAMP"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: phone
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+                    unique: true
+
+        - addUniqueConstraint:
+            tableName: accounts
+            columnNames: phone
+            constraintName: uq_accounts_phone
+
+        - addUniqueConstraint:
+            tableName: accounts
+            columnNames: email
+            constraintName: uq_accounts_email
+
+        - createIndex:
+            tableName: accounts
+            columns:
+              - column:
+                  name: phone
+            indexName: idx_accounts_phone
+
+        - createIndex:
+            tableName: accounts
+            columns:
+              - column:
+                  name: email
+            indexName: idx_accounts_email

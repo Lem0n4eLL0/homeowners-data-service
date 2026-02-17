@@ -1,0 +1,11 @@
+package ru.zeker.authentication.exception;
+
+import org.springframework.http.HttpStatus;
+import ru.zeker.common.exception.BaseException;
+import ru.zeker.common.exception.ErrorCode;
+
+public class AccountNotFoundException extends BaseException {
+    public AccountNotFoundException(String message, ErrorCode errorCode) {
+        super(message, HttpStatus.NOT_FOUND, errorCode);
+    }
+}

@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "homeowners-db",
+      "Group": "Databases",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "homeowners",
+      "Username": "admin",
+      "SSLMode": "prefer"
+    }
+  }
+}

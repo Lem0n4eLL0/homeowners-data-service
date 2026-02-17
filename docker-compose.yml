@@ -1,0 +1,230 @@
+version: "3.9"
+
+services:
+  # === Key Generator (одноразовый) ===
+  keygen:
+    build:
+      context: ./keygen
+    volumes:
+      - keys:/keys
+    init: true
+
+  # === PostgreSQL ===
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./pgadmin/servers.json:/pgadmin4/servers.json
+    depends_on:
+      - postgres
+    networks:
+      - internal
+
+  # === Redis ===
+  redis:
+    image: redis:7
+    container_name: redis
+    volumes:
+      - redisdata:/data
+    networks:
+      - internal
+
+  # === Zookeeper ===
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - internal
+
+  # === Kafka ===
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1" ]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 20s
+    volumes:
+      - kafka_data:/data
+    networks:
+      - internal
+
+  # === Kafka UI ===
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8089:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+      KAFKA_CLUSTERS_0_READONLY: "false"
+      AUTH_TYPE: "LOGIN_FORM"
+      SPRING_SECURITY_USER_NAME: ${SPRING_SECURITY_USER_NAME}
+      SPRING_SECURITY_USER_PASSWORD: ${SPRING_SECURITY_USER_PASSWORD}
+    depends_on:
+      kafka:
+        condition: service_healthy
+      init-kafka:
+        condition: service_completed_successfully
+    networks:
+      - internal
+
+  init-kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command: |
+      bash -c "
+        kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic notification.smtp.verification --partitions 2 --replication-factor 1 &&
+        kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic notification.sms.verification --partitions 8 --replication-factor 1
+      "
+    init: true
+    networks:
+      - internal
+
+  # === API Gateway ===
+  api-gateway:
+    image: api-gateway:latest
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: always
+    ports:
+      - "8080:8080"  # единственная точка входа
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    environment:
+      ACTIVE_PROFILE: ${ACTIVE_PROFILE}
+      PUBLIC_KEY: file:///app/keys/public.pem
+      ACCESS_TOKEN_DURATION: ${ACCESS_TOKEN_DURATION}
+      REFRESH_TOKEN_DURATION: ${REFRESH_TOKEN_DURATION}
+    volumes:
+      - keys:/app/keys:ro
+    depends_on:
+      keygen:
+        condition: service_completed_successfully
+    networks:
+      - internal
+
+  # === Auth Service ===
+  authentication-service:
+    image: authentication-service:latest
+    build:
+      context: .
+      dockerfile: authentication-service/Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: always
+    environment:
+      ACTIVE_PROFILE: ${ACTIVE_PROFILE}
+      FRONT_URL: ${FRONT_URL}
+      PRIVATE_KEY: file:///app/keys/private.pem
+      PUBLIC_KEY: file:///app/keys/public.pem
+      OTP_HMAC_SECRET_FILE: /app/keys/otp-hmac.key
+      POSTGRES_HOST: postgres:5432
+      POSTGRES_USERNAME: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_HOST: kafka:9092
+      ACCESS_TOKEN_DURATION: ${ACCESS_TOKEN_DURATION}
+      REFRESH_TOKEN_DURATION: ${REFRESH_TOKEN_DURATION}
+    depends_on:
+      keygen:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+      init-kafka:
+        condition: service_completed_successfully
+    volumes:
+      - keys:/app/keys:ro
+    networks:
+      - internal
+
+  # === SMTP Service ===
+  notification-service:
+    image: notification-service:latest
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: always
+    environment:
+      ACTIVE_PROFILE: ${ACTIVE_PROFILE}
+      KAFKA_HOST: kafka:9092
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      COMPANY_NAME: ${COMPANY_NAME}
+      SMS_API_ID: ${SMS_API_ID}
+      FRONT_URL: ${FRONT_URL}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - internal
+
+# === Networks ===
+networks:
+  internal:
+
+# === Volumes ===
+volumes:
+  pgdata:
+  pgadmin_data:
+  redisdata:
+  kafka_data:
+  keys:

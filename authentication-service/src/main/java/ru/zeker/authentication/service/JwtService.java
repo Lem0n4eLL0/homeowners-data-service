@@ -1,0 +1,85 @@
+package ru.zeker.authentication.service;
+
+import io.jsonwebtoken.Jwts;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import ru.zeker.authentication.domain.model.entity.Account;
+import ru.zeker.common.config.JwtProperties;
+import ru.zeker.common.consts.JwtKeys;
+
+import java.io.IOException;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.ECPrivateKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.*;
+
+@Service
+@RequiredArgsConstructor
+public class JwtService {
+
+    private final JwtProperties jwtProperties;
+    private Key privateKey;
+
+    @PostConstruct
+    public void init() {
+        try {
+            if (Objects.isNull(jwtProperties.getPrivateKeyPath()) || !jwtProperties.getPrivateKeyPath().exists()) {
+                throw new IllegalStateException("The private key is not set.");
+            }
+
+            var privateKeyContent = new String(jwtProperties.getPrivateKeyPath().getInputStream().readAllBytes());
+
+            var privateKeyPEM = privateKeyContent
+                    .replace("-----BEGIN PRIVATE KEY-----", "")
+                    .replace("-----END PRIVATE KEY-----", "")
+                    .replaceAll("\\s", "");
+
+            var keyBytes = Base64.getDecoder().decode(privateKeyPEM);
+            var spec = new PKCS8EncodedKeySpec(keyBytes);
+            var kf = KeyFactory.getInstance("EC");
+            this.privateKey = kf.generatePrivate(spec);
+            if (!(this.privateKey instanceof ECPrivateKey)) {
+                throw new IllegalStateException("The key is not an EC private key.");
+            }
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("EC algorithm is not supported", e);
+        } catch (InvalidKeySpecException e) {
+            throw new IllegalStateException("Invalid key format", e);
+        } catch (IllegalArgumentException | IOException e) {
+            throw new IllegalStateException("Base64 decoding error", e);
+        } catch (Exception e) {
+            throw new IllegalStateException("JWT initialization error", e);
+        }
+    }
+
+    public String generateAccessToken(Account userDetails) {
+        return generateToken(userDetails, Map.of(), jwtProperties.getAccess().getExpiration());
+    }
+
+    public String generateRefreshToken(Account userDetails) {
+        return generateToken(userDetails, Map.of(), jwtProperties.getRefresh().getExpiration());
+    }
+
+    public String generateEmailToken(Account userDetails, String email) {
+        var claims = new HashMap<String, Object>();
+        claims.put(JwtKeys.EMAIL_KEY, email);
+        return generateToken(userDetails, claims, jwtProperties.getAccess().getExpiration());
+    }
+
+    private String generateToken(Account userDetails, Map<String, Object> claims, long expiration) {
+        var currentTimeMillis = System.currentTimeMillis();
+
+        return Jwts.builder()
+                .claims(claims)
+                .subject(userDetails.getId().toString())
+                .issuedAt(new Date(currentTimeMillis))
+                .expiration(new Date(currentTimeMillis + expiration))
+                .signWith(privateKey)
+                .compact();
+    }
+
+}

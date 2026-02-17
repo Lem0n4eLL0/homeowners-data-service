@@ -1,0 +1,66 @@
+server:
+  port: 8083
+
+spring:
+  profiles:
+    active: ${ACTIVE_PROFILE}
+  application:
+    name: notification-service
+  kafka:
+    properties:
+      retries: 10
+      retry.backoff.ms: 2000
+    bootstrap-servers: ${KAFKA_HOST}
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          timeout: 5000
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
+      debug: true
+app:
+  sms:
+    api-id: ${SMS_API_ID}
+  frontend-url: ${FRONT_URL}
+  company-name: ${COMPANY_NAME}
+  links:
+    email-verification: /email-confirmation
+
+# -----------------------------
+# Dev профиль — DEBUG
+# -----------------------------
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    root: DEBUG
+    ru.zeker: DEBUG
+    org.apache.kafka: INFO
+    org.springframework.kafka: INFO
+
+# -----------------------------
+# Prod профиль — INFO
+# -----------------------------
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  level:
+    root: INFO
+    ru.zeker: INFO

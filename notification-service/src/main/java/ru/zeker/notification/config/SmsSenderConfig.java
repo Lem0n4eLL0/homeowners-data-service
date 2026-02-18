@@ -32,8 +32,8 @@ public class SmsSenderConfig {
                 .build();
     }
 
-    @Bean
-    SenderService senderService(SenderServiceConfiguration configuration){
+    @Bean(destroyMethod = "shutdown")
+    SenderService senderService(SenderServiceConfiguration configuration) {
         return new SenderService(configuration);
     }
 }

@@ -4,7 +4,7 @@ version: "3.9"
 services:
   # === API Gateway ===
   api-gateway:
-    image: ghcr.io/${GHCR_OWNER:-your-username}/api-gateway:${TAG:-latest}
+    image: ghcr.io/${GHCR_OWNER:-lem0n4ell0}/api-gateway:${TAG:-latest}
     build: null  # отключаем сборку в проде
     restart: unless-stopped
     ports:
@@ -14,7 +14,7 @@ services:
 
   # === Auth Service ===
   authentication-service:
-    image: ghcr.io/${GHCR_OWNER:-your-username}/authentication-service:${TAG:-latest}
+    image: ghcr.io/${GHCR_OWNER:-lem0n4ell0}/authentication-service:${TAG:-latest}
     build: null
     restart: unless-stopped
     networks:
@@ -22,7 +22,7 @@ services:
 
   # === SMTP Service ===
   notification-service:
-    image: ghcr.io/${GHCR_OWNER:-your-username}/notification-service:${TAG:-latest}
+    image: ghcr.io/${GHCR_OWNER:-lem0n4ell0}/notification-service:${TAG:-latest}
     build: null
     restart: unless-stopped
     networks:
@@ -30,7 +30,7 @@ services:
 
   # === Homeowners Service ===
   homeowners-service:
-    image: ghcr.io/${GHCR_OWNER:-your-username}/homeowners-service:${TAG:-latest}
+    image: ghcr.io/${GHCR_OWNER:-lem0n4ell0}/homeowners-service:${TAG:-latest}
     build: null
     restart: unless-stopped
     networks:

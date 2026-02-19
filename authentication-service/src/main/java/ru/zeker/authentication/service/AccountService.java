@@ -33,6 +33,7 @@ public class AccountService {
         return repository.existsByEmail(email);
     }
 
+    @Transactional
     public Account findOrCreateByPhone(String phone) {
         return repository.findByPhone(phone).orElseGet(() ->
                 create(phone)

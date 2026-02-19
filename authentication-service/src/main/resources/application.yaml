@@ -21,21 +21,26 @@ spring:
       port: ${REDIS_PORT:6379}
       database: 0
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST}/${POSTGRES_DB}
+    url: jdbc:postgresql://${POSTGRES_HOST}/${POSTGRES_DB}?currentSchema=authentication_service
     driver-class-name: org.postgresql.Driver
     username: ${POSTGRES_USERNAME:admin}
     password: ${POSTGRES_PASSWORD:admin}
+    hikari:
+      schema: authentication_service
   jpa:
     hibernate:
       ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
+        default_schema: authentication_service
     database: postgresql
     show-sql: true
   liquibase:
     enabled: true
     change-log: classpath:/db/changelog/db.changelog-master.yaml
+    default-schema: authentication_service
+    liquibase-schema: public
 jwt:
   private-key-path: ${PRIVATE_KEY}
   public-key-path: ${PUBLIC_KEY}

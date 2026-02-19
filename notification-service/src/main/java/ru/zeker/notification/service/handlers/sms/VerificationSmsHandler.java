@@ -36,7 +36,6 @@ public class VerificationSmsHandler implements KafkaEventHandler<SmsEvent> {
         String text = String.format("Your verification code: %s", code);
 
         log.info("Sending SMS to {}", maskedPhone);
-        log.debug("Message content: {}", text);
 
         SMSRuSendRequest sendRequest = new SMSRuSendRequest();
         sendRequest.setReceivers(Collections.singleton(phone));

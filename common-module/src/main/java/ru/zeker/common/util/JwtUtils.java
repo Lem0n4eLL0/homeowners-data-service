@@ -109,4 +109,8 @@ public class JwtUtils {
         return claims.get(JwtKeys.EMAIL_KEY, String.class);
     }
 
+    public Boolean getConsent(Claims claims) {
+        return claims.get(JwtKeys.PDN_KEY, Boolean.class);
+    }
+
 }

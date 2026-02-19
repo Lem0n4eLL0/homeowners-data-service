@@ -23,6 +23,7 @@ import ru.zeker.common.exception.AuthException;
 import ru.zeker.common.exception.ErrorCode;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -35,6 +36,7 @@ import static ru.zeker.common.headers.AppHeaders.ACCOUNT_ID;
 public class JwtValidationFilter implements GlobalFilter, Ordered {
     private static final String BEARER_PREFIX = "Bearer ";
     private static final String AUTH_REQUIRED_KEY = "auth-required";
+    private static final String CONSENT_PATH_PREFIX = "/api/v1/accounts/me/consent";
 
     private final GatewayJwt jwtUtils;
     private final Jackson2JsonEncoder jsonEncoder;
@@ -43,8 +45,7 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         return isAuthRequired(exchange)
                 .flatMap(required -> required
-                        ? extractClaims(exchange)
-                        .flatMap(claims -> chain.filter(withUserHeaders(exchange, claims)))
+                        ? validateAndProceed(exchange, chain)
                         : chain.filter(exchange)
                 )
                 .onErrorResume(AuthException.class, ex -> writeError(exchange, ex));
@@ -97,6 +98,28 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
         return exchange.mutate().request(mutated).build();
     }
 
+    private Mono<Void> checkPersonalDataConsent(ServerWebExchange exchange, Claims claims) {
+        var hasConsent = Boolean.TRUE.equals(jwtUtils.getConsent(claims));
+        var requestPath = exchange.getRequest().getPath().pathWithinApplication().value();
+        var isConsentPath = requestPath.startsWith(CONSENT_PATH_PREFIX);
+        if (hasConsent || isConsentPath) {
+            return Mono.empty();
+        }
+        var accountId = jwtUtils.getAccountId(claims);
+        log.warn("User {} accessed {} without personal data consent", accountId, requestPath);
+        return Mono.error(new AuthException(
+                "Personal data consent is required",
+                HttpStatus.FORBIDDEN,
+                ErrorCode.PERSONAL_DATA_CONSENT_REQUIRED
+        ));
+    }
+
+    private Mono<Void> validateAndProceed(ServerWebExchange exchange, GatewayFilterChain chain) {
+        return extractClaims(exchange)
+                .flatMap(claims -> checkPersonalDataConsent(exchange, claims)
+                        .then(chain.filter(withUserHeaders(exchange, claims)))
+                );
+    }
 
     private Mono<Void> writeError(ServerWebExchange exchange, AuthException ex) {
         var response = exchange.getResponse();
@@ -117,7 +140,7 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
                         response.bufferFactory(),
                         ResolvableType.forClassWithGenerics(Map.class, String.class, Object.class),
                         MediaType.APPLICATION_JSON,
-                        null
+                        Collections.emptyMap()
                 )
         );
     }

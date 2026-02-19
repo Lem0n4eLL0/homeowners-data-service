@@ -14,8 +14,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import ru.zeker.authentication.domain.dto.request.*;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import ru.zeker.authentication.domain.dto.request.SmsRequest;
+import ru.zeker.authentication.domain.dto.request.SmsVerifyRequest;
 import ru.zeker.authentication.domain.dto.response.AuthenticationResponse;
 import ru.zeker.authentication.service.AuthenticationService;
 import ru.zeker.authentication.service.RefreshTokenService;
@@ -23,6 +29,7 @@ import ru.zeker.authentication.util.CookieUtils;
 import ru.zeker.common.config.JwtProperties;
 
 import java.time.Duration;
+import java.util.Optional;
 
 /**
  * Controller responsible for passwordless authentication flow.
@@ -101,12 +108,12 @@ public class AuthenticationController {
     ) {
         var tokens = authenticationService.verifySmsCode(request);
 
-        var cookie = CookieUtils.createTokenCookie(
-                tokens.getRefreshToken(),
-                Duration.ofMillis(jwtProperties.getRefresh().getExpiration())
-        );
-
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        Optional.ofNullable(tokens.getRefreshToken())
+                .map(rt -> CookieUtils.createTokenCookie(
+                        rt,
+                        Duration.ofMillis(jwtProperties.getRefresh().getExpiration())
+                ))
+                .ifPresent(cookie -> response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString()));
 
         return ResponseEntity.ok(new AuthenticationResponse(tokens.getToken()));
     }
@@ -116,15 +123,23 @@ public class AuthenticationController {
      * <p>
      * Refresh token is retrieved from HttpOnly cookie.
      * A new refresh token is generated and replaces the old one.
+     * <p>
+     * If the refresh token cookie is missing (e.g., user has not yet accepted personal data consent),
+     * a 400 Bad Request is returned.
      *
      * @param refreshToken refresh token from cookie
      * @param response     HTTP response used to attach new refresh token cookie
      * @return {@link AuthenticationResponse} containing new access token
      */
-    @Operation(summary = "Refresh access token", description = "Refreshes access token using refresh token from cookie and returns new access token")
+    @Operation(
+            summary = "Refresh access token",
+            description = "Refreshes access token using refresh token from cookie and returns new access token. " +
+                    "Returns 400 if the refresh token cookie is missing (e.g., consent not signed)."
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Token successfully refreshed",
                     content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Refresh token cookie is missing", content = @Content),
             @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token", content = @Content)
     })
     @PostMapping("/refresh")

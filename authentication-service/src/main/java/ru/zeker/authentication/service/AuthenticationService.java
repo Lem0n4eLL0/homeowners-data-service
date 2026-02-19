@@ -53,7 +53,6 @@ public class AuthenticationService {
      *
      * @param request contains the user's phone number
      */
-    @Transactional
     public void requestSmsCode(SmsRequest request) {
         var phone = request.getPhone();
         log.info("Requesting SMS verification for phone={}", maskPhone(phone));
@@ -94,14 +93,15 @@ public class AuthenticationService {
         log.debug("Authentication successful for account={}", maskPhone(phone));
 
         var jwtToken = jwtService.generateAccessToken(account);
-        var refreshToken = refreshTokenService.createRefreshToken(account);
+        var tokens = Tokens.builder().token(jwtToken);
+
+        if (account.isPersonalDataConsent()) {
+            tokens.refreshToken(refreshTokenService.createRefreshToken(account));
+        }
 
         log.info("User logged in successfully: account={}", maskPhone(phone));
 
-        return Tokens.builder()
-                .token(jwtToken)
-                .refreshToken(refreshToken)
-                .build();
+        return tokens.build();
     }
 
 
@@ -118,6 +118,7 @@ public class AuthenticationService {
         var claims = jwtUtils.extractAllClaims(refreshToken);
         var user = new Account();
         user.setId(UUID.fromString(jwtUtils.getAccountId(claims)));
+        user.setPersonalDataConsent(jwtUtils.getConsent(claims));
 
         var jwtToken = jwtService.generateAccessToken(user);
         var newRefreshToken = refreshTokenService.rotateRefreshToken(token, user);
@@ -195,5 +196,18 @@ public class AuthenticationService {
         } catch (ExpiredJwtException e) {
             throw new InvalidTokenException("Email confirmation token expired", ErrorCode.EMAIL_TOKEN_EXPIRED);
         }
+    }
+
+    @Transactional
+    public Tokens acceptConsent(UUID accountId) {
+        var account = accountService.findById(accountId);
+        account.setPersonalDataConsent(true);
+        accountService.update(account);
+        var jwtToken = jwtService.generateAccessToken(account);
+        var refreshToken = refreshTokenService.createRefreshToken(account);
+        return Tokens.builder()
+                .token(jwtToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 }

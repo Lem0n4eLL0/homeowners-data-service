@@ -4,7 +4,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,6 +37,10 @@ public class Account extends BaseEntity implements UserDetails {
 
     @Column(unique = true)
     private String email;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean personalDataConsent = false;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

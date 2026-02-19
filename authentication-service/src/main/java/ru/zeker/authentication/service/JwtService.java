@@ -15,7 +15,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.ECPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.*;
+import java.util.Base64;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -57,11 +61,15 @@ public class JwtService {
     }
 
     public String generateAccessToken(Account userDetails) {
-        return generateToken(userDetails, Map.of(), jwtProperties.getAccess().getExpiration());
+        var claims = new HashMap<String, Object>();
+        claims.put(JwtKeys.PDN_KEY, userDetails.isPersonalDataConsent());
+        return generateToken(userDetails, claims, jwtProperties.getAccess().getExpiration());
     }
 
     public String generateRefreshToken(Account userDetails) {
-        return generateToken(userDetails, Map.of(), jwtProperties.getRefresh().getExpiration());
+        var claims = new HashMap<String, Object>();
+        claims.put(JwtKeys.PDN_KEY, userDetails.isPersonalDataConsent());
+        return generateToken(userDetails, claims, jwtProperties.getRefresh().getExpiration());
     }
 
     public String generateEmailToken(Account userDetails, String email) {

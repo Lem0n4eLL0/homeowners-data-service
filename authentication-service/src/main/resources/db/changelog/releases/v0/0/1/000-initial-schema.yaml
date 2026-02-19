@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 000-create-schema
+      id: 000-create-schema-authentication-service
       author: zeker
       changes:
         - sql:

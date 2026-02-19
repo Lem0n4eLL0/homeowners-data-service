@@ -1,0 +1,68 @@
+server:
+  port: 8082
+spring:
+  profiles:
+    active: ${ACTIVE_PROFILE}
+  application:
+    name: homeowners-service
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}/${POSTGRES_DB}?currentSchema=homeowners_service
+    driver-class-name: org.postgresql.Driver
+    username: ${POSTGRES_USERNAME:admin}
+    password: ${POSTGRES_PASSWORD:admin}
+    hikari:
+      schema: homeowners_service
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: homeowners_service
+    database: postgresql
+    show-sql: true
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+    default-schema: homeowners_service
+    liquibase-schema: public
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+app:
+  domain: http://localhost:8080
+  version: 1
+
+
+# -----------------------------
+# Dev профиль — DEBUG
+# -----------------------------
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    root: DEBUG
+    ru.zeker: DEBUG
+
+# -----------------------------
+# Prod профиль — INFO
+# -----------------------------
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  level:
+    root: INFO
+    ru.zeker: INFO

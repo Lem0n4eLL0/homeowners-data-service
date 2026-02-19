@@ -1,0 +1,66 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-create-property-memberships-table-homeowners-service
+      author: zeker
+      changes:
+        - createTable:
+            tableName: property_memberships
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_property_memberships
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: property_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: property_memberships
+            constraintName: fk_property_memberships_user_id
+            referencedColumnNames: id
+            referencedTableName: users
+        - addForeignKeyConstraint:
+            baseColumnNames: property_id
+            baseTableName: property_memberships
+            constraintName: fk_property_memberships_property_id
+            referencedColumnNames: id
+            referencedTableName: properties
+        - createIndex:
+            indexName: uk_property_memberships_user_property
+            tableName: property_memberships
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: property_id
+            unique: true

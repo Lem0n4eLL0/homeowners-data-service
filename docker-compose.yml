@@ -217,6 +217,28 @@ services:
     networks:
       - internal
 
+  homeowners-service:
+    image: homeowners-service:latest
+    build:
+      context: .
+      dockerfile: homeowners-service/Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: always
+    environment:
+      ACTIVE_PROFILE: ${ACTIVE_PROFILE}
+      POSTGRES_HOST: postgres:5432
+      POSTGRES_USERNAME: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    depends_on:
+      postgres:
+        condition: service_started
+    volumes:
+      - keys:/app/keys:ro
+    networks:
+      - internal
+
 # === Networks ===
 networks:
   internal:

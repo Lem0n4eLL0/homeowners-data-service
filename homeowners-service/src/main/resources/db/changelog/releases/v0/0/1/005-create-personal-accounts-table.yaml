@@ -1,0 +1,69 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-create-personal-accounts-table-homeowners-service
+      author: zeker
+      changes:
+        - createTable:
+            tableName: personal_accounts
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_personal_accounts
+              - column:
+                  name: personal_number
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: property_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: company_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: service_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseColumnNames: property_id
+            baseTableName: personal_accounts
+            constraintName: fk_personal_accounts_property_id
+            referencedColumnNames: id
+            referencedTableName: properties
+        - addForeignKeyConstraint:
+            baseColumnNames: company_id
+            baseTableName: personal_accounts
+            constraintName: fk_personal_accounts_company_id
+            referencedColumnNames: id
+            referencedTableName: companies
+        - addForeignKeyConstraint:
+            baseColumnNames: service_id
+            baseTableName: personal_accounts
+            constraintName: fk_personal_accounts_service_id
+            referencedColumnNames: id
+            referencedTableName: services

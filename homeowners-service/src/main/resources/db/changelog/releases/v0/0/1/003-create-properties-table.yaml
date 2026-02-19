@@ -1,0 +1,64 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-properties-table-homeowners-service
+      author: zeker
+      changes:
+        - createTable:
+            tableName: properties
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_properties
+              - column:
+                  name: cadastral_number
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: city
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: street
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: house_number
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: corpus
+                  type: varchar(255)
+              - column:
+                  name: flat_number
+                  type: varchar(255)
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  constraints:
+                    nullable: false
+        - createIndex:
+            indexName: uk_properties_cadastral_number
+            tableName: properties
+            columns:
+              - column:
+                  name: cadastral_number
+            unique: true

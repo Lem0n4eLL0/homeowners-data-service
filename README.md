@@ -27,7 +27,31 @@
 ### Требования
 
 - Docker & Docker Compose
-- Переменные окружения лежат в .env файле
+### Переменные окружения
+
+- ACTIVE_PROFILE= Активный профиль Spring: dev, prod
+
+- POSTGRES_USER= Имя пользователя базы данных PostgreSQL
+- POSTGRES_PASSWORD= Пароль пользователя PostgreSQL
+- POSTGRES_DB= Название базы данных PostgreSQL
+
+- PGADMIN_DEFAULT_EMAIL= Email для входа в pgAdmin
+- PGADMIN_DEFAULT_PASSWORD= Пароль для входа в pgAdmin
+
+- FRONT_URL= URL фронтенда, используется в email-ссылках и редиректах
+
+- ACCESS_TOKEN_DURATION= Время жизни Access Token (например: 900000) ms
+- REFRESH_TOKEN_DURATION= Время жизни Refresh Token (например: 2592000000) ms
+
+- SPRING_SECURITY_USER_NAME= Логин для доступа к UI Kafka (если включена базовая аутентификация)
+- SPRING_SECURITY_USER_PASSWORD= Пароль для Kafka UI
+
+- MAIL_USERNAME= Email пользователя для отправки писем (SMTP)
+- MAIL_PASSWORD= Пароль или app-password для SMTP
+- COMPANY_NAME= Название компании, используется в email и уведомлениях
+
+- SMS_API_ID= API ID для доступа к SMS.RU API
+
 
 ### Запуск
 

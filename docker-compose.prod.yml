@@ -1,4 +1,4 @@
-# docker-compose.yml
+# docker-compose.prod.yml
 version: "3.9"
 
 services:
@@ -27,8 +27,7 @@ services:
     image: dpage/pgadmin4:latest
     container_name: pgadmin
     restart: always
-    ports:
-      - "8099:80"
+    ports: [ ]
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
@@ -89,16 +88,12 @@ services:
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
-    ports:
-      - "8089:8080"
+    ports: [ ]
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
       KAFKA_CLUSTERS_0_READONLY: "false"
-      AUTH_TYPE: "LOGIN_FORM"
-      SPRING_SECURITY_USER_NAME: ${SPRING_SECURITY_USER_NAME}
-      SPRING_SECURITY_USER_PASSWORD: ${SPRING_SECURITY_USER_PASSWORD}
     depends_on:
       kafka:
         condition: service_healthy
@@ -123,15 +118,10 @@ services:
 
   # === API Gateway ===
   api-gateway:
-    image: api-gateway:latest
-    build:
-      context: ../../../Downloads
-      dockerfile: api-gateway/Dockerfile
-      args:
-        DOCKER_BUILDKIT: 1
+    image: ghcr.io/${GHCR_OWNER:-your-username}/api-gateway:${TAG:-latest}
     restart: always
     ports:
-      - "8080:8080"  # единственная точка входа
+      - "127.0.0.1:8080:8080"  # только localhost для Nginx
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
       interval: 30s
@@ -153,12 +143,7 @@ services:
 
   # === Auth Service ===
   authentication-service:
-    image: authentication-service:latest
-    build:
-      context: ../../../Downloads
-      dockerfile: authentication-service/Dockerfile
-      args:
-        DOCKER_BUILDKIT: 1
+    image: ghcr.io/${GHCR_OWNER:-your-username}/authentication-service:${TAG:-latest}
     restart: always
     environment:
       ACTIVE_PROFILE: ${ACTIVE_PROFILE}
@@ -193,12 +178,7 @@ services:
 
   # === SMTP Service ===
   notification-service:
-    image: notification-service:latest
-    build:
-      context: ../../../Downloads
-      dockerfile: notification-service/Dockerfile
-      args:
-        DOCKER_BUILDKIT: 1
+    image: ghcr.io/${GHCR_OWNER:-your-username}/notification-service:${TAG:-latest}
     restart: always
     environment:
       ACTIVE_PROFILE: ${ACTIVE_PROFILE}
@@ -219,12 +199,7 @@ services:
       - internal
 
   homeowners-service:
-    image: homeowners-service:latest
-    build:
-      context: ../../../Downloads
-      dockerfile: homeowners-service/Dockerfile
-      args:
-        DOCKER_BUILDKIT: 1
+    image: ghcr.io/${GHCR_OWNER:-your-username}/homeowners-service:${TAG:-latest}
     restart: always
     environment:
       ACTIVE_PROFILE: ${ACTIVE_PROFILE}

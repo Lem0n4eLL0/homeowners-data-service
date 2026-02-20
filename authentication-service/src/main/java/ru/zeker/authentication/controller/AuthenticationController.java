@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.zeker.authentication.domain.dto.request.SmsRequest;
 import ru.zeker.authentication.domain.dto.request.SmsVerifyRequest;
+import ru.zeker.authentication.domain.dto.response.AccountExistsResponse;
 import ru.zeker.authentication.domain.dto.response.AuthenticationResponse;
 import ru.zeker.authentication.service.AuthenticationService;
 import ru.zeker.authentication.service.RefreshTokenService;
@@ -71,15 +72,14 @@ public class AuthenticationController {
                     "If a code was recently sent, a 429 Too Many Requests is returned. Cooldown between requests is 60 seconds."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "202", description = "SMS code sent"),
+            @ApiResponse(responseCode = "200", description = "SMS code sent"),
             @ApiResponse(responseCode = "429", description = "Too many requests")
     })
     @PostMapping("/sms/request")
-    public ResponseEntity<Void> requestSmsCode(
+    public ResponseEntity<AccountExistsResponse> requestSmsCode(
             @RequestBody @Valid SmsRequest request
     ) {
-        authenticationService.requestSmsCode(request);
-        return ResponseEntity.accepted().build();
+        return ResponseEntity.ok(authenticationService.requestSmsCode(request));
     }
 
     /**

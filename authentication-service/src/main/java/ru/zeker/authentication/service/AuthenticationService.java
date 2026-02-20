@@ -13,6 +13,7 @@ import ru.zeker.authentication.domain.dto.request.ConfirmationEmailRequest;
 import ru.zeker.authentication.domain.dto.request.EmailRequest;
 import ru.zeker.authentication.domain.dto.request.SmsRequest;
 import ru.zeker.authentication.domain.dto.request.SmsVerifyRequest;
+import ru.zeker.authentication.domain.dto.response.AccountExistsResponse;
 import ru.zeker.authentication.domain.model.entity.Account;
 import ru.zeker.authentication.exception.AccountAlreadyEmailException;
 import ru.zeker.authentication.exception.AccountEmailAlreadyUsedException;
@@ -53,7 +54,7 @@ public class AuthenticationService {
      *
      * @param request contains the user's phone number
      */
-    public void requestSmsCode(SmsRequest request) {
+    public AccountExistsResponse requestSmsCode(SmsRequest request) {
         var phone = request.getPhone();
         log.info("Requesting SMS verification for phone={}", maskPhone(phone));
 
@@ -71,6 +72,8 @@ public class AuthenticationService {
         kafkaProducer.sendSmsEvent(event);
 
         log.info("SMS verification event published for phone={}", maskPhone(phone));
+
+        return new AccountExistsResponse(accountService.existsByPhone(phone));
     }
 
     /**

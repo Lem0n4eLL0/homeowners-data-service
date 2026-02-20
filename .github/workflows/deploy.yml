@@ -65,5 +65,3 @@ jobs:
             
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
             docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-            
-            docker image prune -f --filter "until=24h"

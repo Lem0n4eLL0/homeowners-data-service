@@ -1,14 +1,10 @@
 # docker-compose.prod.yml
-version: "3.9"
-
 services:
   # === API Gateway ===
   api-gateway:
     image: ghcr.io/lem0n4ell0/api-gateway:${TAG:-latest}
     build: null  # отключаем сборку в проде
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:8080:8080"  # только localhost для Nginx
     networks:
       - internal
 

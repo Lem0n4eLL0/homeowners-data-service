@@ -8,15 +8,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.servlet.http.HttpServletResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -32,10 +30,7 @@ import ru.zeker.authentication.exception.AccountEmailAlreadyUsedException;
 import ru.zeker.authentication.exception.TooManyRequestsException;
 import ru.zeker.authentication.service.AccountService;
 import ru.zeker.authentication.service.AuthenticationService;
-import ru.zeker.authentication.util.CookieUtils;
-import ru.zeker.common.config.JwtProperties;
 
-import java.time.Duration;
 import java.util.UUID;
 
 import static ru.zeker.common.headers.AppHeaders.ACCOUNT_ID;
@@ -45,12 +40,15 @@ import static ru.zeker.common.headers.AppHeaders.ACCOUNT_ID;
 @RequestMapping("/accounts")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
+@Tag(
+        name = "Account",
+        description = "Manage your account"
+)
 public class AccountController {
 
     private final AuthenticationService authenticationService;
     private final AccountService accountService;
     private final AccountMapper accountMapper;
-    private final JwtProperties jwtProperties;
 
     /**
      * Retrieves information about the currently authenticated user.
@@ -77,38 +75,6 @@ public class AccountController {
             @RequestHeader(ACCOUNT_ID) @NotNull UUID accountId
     ) {
         return ResponseEntity.ok(accountMapper.toResponse(accountService.findById(accountId)));
-    }
-
-    /**
-     * Marks the user's personal data consent as accepted and issues new JWT tokens.
-     * <p>
-     * Behavior:
-     * 1. Updates the user's account to indicate personal data consent is given.
-     * 2. Generates a new access token and refresh token.
-     * 3. Sets the refresh token in an HttpOnly cookie.
-     *
-     * @param accountId unique identifier of the user (from header)
-     * @param response  HTTP response to set refresh token cookie
-     * @return {@link AuthenticationResponse} containing new access token
-     */
-    @Operation(
-            summary = "Accept personal data consent",
-            description = "Marks the user's personal data consent as accepted and issues new JWT tokens, including setting the refresh token in an HttpOnly cookie."
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Consent accepted and new tokens issued",
-                    content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Account not found")
-    })
-    @PatchMapping("/me/consent")
-    public ResponseEntity<AuthenticationResponse> acceptConsent(
-            @RequestHeader(ACCOUNT_ID) @NotNull UUID accountId,
-            HttpServletResponse response
-    ) {
-        var tokens = authenticationService.acceptConsent(accountId);
-        var cookie = CookieUtils.createTokenCookie(tokens.getRefreshToken(), Duration.ofMillis(jwtProperties.getRefresh().getExpiration()));
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-        return ResponseEntity.ok(new AuthenticationResponse(tokens.getToken()));
     }
 
     /**

@@ -17,6 +17,7 @@ spring:
                 allowed-origin-patterns:
                   - "http://localhost:*"
                   - ${FRONT_URL}
+                  - ${API_DOMAIN}
                 allowed-methods: "*"
                 allowed-headers: "*"
                 exposed-headers:
@@ -65,6 +66,26 @@ spring:
                         auth-required: false
                       order: -1
 
+                    - id: homeowners-service-docs
+                      uri: http://homeowners-service:8082
+                      predicates:
+                        - Path=/homeowners-service/v3/api-docs/**
+                      filters:
+                        - StripPrefix=1
+                      metadata:
+                        auth-required: false
+                      order: -1
+
+                    - id: homeowners-service-docs-swagger
+                      uri: http://homeowners-service:8082
+                      predicates:
+                        - Path=/homeowners-service/swagger-ui.html
+                      filters:
+                        - StripPrefix=1
+                      metadata:
+                        auth-required: false
+                      order: -1
+
 server:
   port: 8080
 
@@ -88,6 +109,8 @@ springdoc:
     urls:
       - name: authentication-service
         url: /authentication-service/v3/api-docs
+      - name: homeowners-service
+        url: /homeowners-service/v3/api-docs
 
 # -----------------------------
 # Dev профиль — DEBUG

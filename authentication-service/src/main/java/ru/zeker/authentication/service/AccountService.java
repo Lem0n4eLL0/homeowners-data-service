@@ -9,6 +9,7 @@ import ru.zeker.authentication.exception.AccountNotFoundException;
 import ru.zeker.authentication.repository.AccountRepository;
 import ru.zeker.common.exception.ErrorCode;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static ru.zeker.common.util.MaskPhoneUtils.maskPhone;
@@ -24,6 +25,10 @@ public class AccountService {
                 .orElseThrow(() -> new AccountNotFoundException("Account with phone " + maskPhone(phone) + " not found", ErrorCode.USER_NOT_FOUND));
     }
 
+    public Optional<Account> loadByPhone(String phone) {
+        return repository.findByPhone(phone);
+    }
+
     public Account findById(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new AccountNotFoundException("Account with ID " + id + " not found", ErrorCode.USER_NOT_FOUND));
@@ -33,21 +38,16 @@ public class AccountService {
         return repository.existsByEmail(email);
     }
 
-    public Boolean existsByPhone(String phone){
+    public Boolean existsByPhone(String phone) {
         return repository.existsByPhone(phone);
     }
 
-    @Transactional
-    public Account findOrCreateByPhone(String phone) {
-        return repository.findByPhone(phone).orElseGet(() ->
-                create(phone)
-        );
-    }
 
     @Transactional
-    public Account create(String phone){
+    public Account create(String phone) {
         return repository.save(Account.builder()
                 .phone(phone)
+                .personalDataConsent(true)
                 .build());
     }
 

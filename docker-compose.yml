@@ -123,7 +123,7 @@ services:
   api-gateway:
     image: api-gateway:latest
     build:
-      context: ../../../Downloads
+      context: .
       dockerfile: api-gateway/Dockerfile
       args:
         DOCKER_BUILDKIT: 1
@@ -153,7 +153,7 @@ services:
   authentication-service:
     image: authentication-service:latest
     build:
-      context: ../../../Downloads
+      context: .
       dockerfile: authentication-service/Dockerfile
       args:
         DOCKER_BUILDKIT: 1
@@ -161,6 +161,7 @@ services:
     environment:
       ACTIVE_PROFILE: ${ACTIVE_PROFILE}
       FRONT_URL: ${FRONT_URL}
+      API_DOMAIN: ${API_DOMAIN}
       PRIVATE_KEY: file:///app/keys/private.pem
       PUBLIC_KEY: file:///app/keys/public.pem
       OTP_HMAC_SECRET_FILE: /app/keys/otp-hmac.key
@@ -193,7 +194,7 @@ services:
   notification-service:
     image: notification-service:latest
     build:
-      context: ../../../Downloads
+      context: .
       dockerfile: notification-service/Dockerfile
       args:
         DOCKER_BUILDKIT: 1
@@ -219,13 +220,14 @@ services:
   homeowners-service:
     image: homeowners-service:latest
     build:
-      context: ../../../Downloads
+      context: .
       dockerfile: homeowners-service/Dockerfile
       args:
         DOCKER_BUILDKIT: 1
     restart: always
     environment:
       ACTIVE_PROFILE: ${ACTIVE_PROFILE}
+      API_DOMAIN: ${API_DOMAIN}
       POSTGRES_HOST: postgres:5432
       POSTGRES_USERNAME: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

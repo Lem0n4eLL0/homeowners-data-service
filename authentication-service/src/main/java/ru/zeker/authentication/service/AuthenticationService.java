@@ -1,12 +1,9 @@
 package ru.zeker.authentication.service;
 
 import io.jsonwebtoken.ExpiredJwtException;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import ru.zeker.authentication.domain.dto.Tokens;
 import ru.zeker.authentication.domain.dto.request.ConfirmationEmailRequest;
@@ -17,9 +14,10 @@ import ru.zeker.authentication.domain.dto.response.AccountExistsResponse;
 import ru.zeker.authentication.domain.model.entity.Account;
 import ru.zeker.authentication.exception.AccountAlreadyEmailException;
 import ru.zeker.authentication.exception.AccountEmailAlreadyUsedException;
+import ru.zeker.authentication.exception.BadCredentialsException;
+import ru.zeker.authentication.exception.ConsentRequiredException;
 import ru.zeker.authentication.exception.InvalidTokenException;
 import ru.zeker.authentication.exception.TooManyRequestsException;
-import ru.zeker.authentication.security.SmsAuthenticationToken;
 import ru.zeker.common.dto.kafka.sms.SmsEvent;
 import ru.zeker.common.dto.kafka.smtp.EmailEvent;
 import ru.zeker.common.exception.ErrorCode;
@@ -41,7 +39,6 @@ public class AuthenticationService {
     private final OtpService otpService;
     private final JwtService jwtService;
     private final JwtUtils jwtUtils;
-    private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
     private final KafkaProducer kafkaProducer;
     private final VerificationCooldownService verificationCooldownService;
@@ -77,34 +74,47 @@ public class AuthenticationService {
     }
 
     /**
-     * Verifies the OTP code provided by the user, authenticates the user,
-     * and issues JWT access and refresh tokens.
+     * Verifies the OTP code provided by the user for passwordless authentication,
+     * optionally creates a new account if it does not exist and the user has given
+     * personal data consent, and issues JWT access and refresh tokens.
+     * <p>
+     * Flow:
+     * 1. OTP code is verified via {@link OtpService}.
+     * 2. Existing user → authenticated.
+     * 3. New user → created only if {@code personalDataConsent = true}, otherwise
+     * {@link ConsentRequiredException} is thrown.
+     * 4. JWT access token is generated.
+     * 5. Refresh token is created and stored (e.g., in Redis) and returned to the client.
      *
-     * @param request contains the user's phone and OTP code
-     * @return Tokens object containing access and refresh JWTs
-     * @throws BadCredentialsException if verification fails
+     * @param request {@link SmsVerifyRequest} containing the phone number, OTP code,
+     *                and optional personalDataConsent for new user registration.
+     * @return {@link Tokens} containing JWT access and refresh tokens.
+     * @throws BadCredentialsException  if OTP is invalid or expired
+     * @throws ConsentRequiredException if the user does not exist and consent is not given
      */
     public Tokens verifySmsCode(SmsVerifyRequest request) {
         var phone = request.getPhone();
         log.info("Attempting login via SMS for account={}", maskPhone(phone));
 
-        var authentication = authenticationManager.authenticate(
-                new SmsAuthenticationToken(phone, request.getCode())
-        );
+        otpService.verify(phone, request.getCode());
 
-        var account = (Account) authentication.getPrincipal();
+        var account = accountService.loadByPhone(phone)
+                .orElseGet(() -> {
+                    if (!Boolean.TRUE.equals(request.getPersonalDataConsent())) {
+                        throw new ConsentRequiredException();
+                    }
+                    return accountService.create(phone);
+                });
         log.debug("Authentication successful for account={}", maskPhone(phone));
 
-        var jwtToken = jwtService.generateAccessToken(account);
-        var tokens = Tokens.builder().token(jwtToken);
-
-        if (account.isPersonalDataConsent()) {
-            tokens.refreshToken(refreshTokenService.createRefreshToken(account));
-        }
+        var tokens = Tokens.builder()
+                .token(jwtService.generateAccessToken(account))
+                .refreshToken(refreshTokenService.createRefreshToken(account))
+                .build();
 
         log.info("User logged in successfully: account={}", maskPhone(phone));
 
-        return tokens.build();
+        return tokens;
     }
 
 
@@ -121,7 +131,6 @@ public class AuthenticationService {
         var claims = jwtUtils.extractAllClaims(refreshToken);
         var user = new Account();
         user.setId(UUID.fromString(jwtUtils.getAccountId(claims)));
-        user.setPersonalDataConsent(jwtUtils.getConsent(claims));
 
         var jwtToken = jwtService.generateAccessToken(user);
         var newRefreshToken = refreshTokenService.rotateRefreshToken(token, user);
@@ -201,16 +210,4 @@ public class AuthenticationService {
         }
     }
 
-    @Transactional
-    public Tokens acceptConsent(UUID accountId) {
-        var account = accountService.findById(accountId);
-        account.setPersonalDataConsent(true);
-        accountService.update(account);
-        var jwtToken = jwtService.generateAccessToken(account);
-        var refreshToken = refreshTokenService.createRefreshToken(account);
-        return Tokens.builder()
-                .token(jwtToken)
-                .refreshToken(refreshToken)
-                .build();
-    }
 }

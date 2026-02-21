@@ -3,8 +3,8 @@ package ru.zeker.authentication.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
+import ru.zeker.authentication.exception.BadCredentialsException;
 import ru.zeker.authentication.util.HmacUtils;
 
 import java.time.Duration;

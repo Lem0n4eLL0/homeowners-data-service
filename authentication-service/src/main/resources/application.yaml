@@ -60,7 +60,7 @@ app:
   security:
     otp:
       hmac-secret: ${OTP_HMAC_SECRET_FILE}
-  domain: http://localhost:8080
+  domain: ${API_DOMAIN:http://localhost:8080}
   version: 1
 
 

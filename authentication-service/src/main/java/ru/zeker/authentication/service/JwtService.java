@@ -16,6 +16,7 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,15 +62,11 @@ public class JwtService {
     }
 
     public String generateAccessToken(Account userDetails) {
-        var claims = new HashMap<String, Object>();
-        claims.put(JwtKeys.PDN_KEY, userDetails.isPersonalDataConsent());
-        return generateToken(userDetails, claims, jwtProperties.getAccess().getExpiration());
+        return generateToken(userDetails, Collections.emptyMap(), jwtProperties.getAccess().getExpiration());
     }
 
     public String generateRefreshToken(Account userDetails) {
-        var claims = new HashMap<String, Object>();
-        claims.put(JwtKeys.PDN_KEY, userDetails.isPersonalDataConsent());
-        return generateToken(userDetails, claims, jwtProperties.getRefresh().getExpiration());
+        return generateToken(userDetails, Collections.emptyMap(), jwtProperties.getRefresh().getExpiration());
     }
 
     public String generateEmailToken(Account userDetails, String email) {

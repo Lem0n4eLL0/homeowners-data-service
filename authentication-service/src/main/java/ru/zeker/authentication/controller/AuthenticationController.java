@@ -30,7 +30,6 @@ import ru.zeker.authentication.util.CookieUtils;
 import ru.zeker.common.config.JwtProperties;
 
 import java.time.Duration;
-import java.util.Optional;
 
 /**
  * Controller responsible for passwordless authentication flow.
@@ -83,23 +82,34 @@ public class AuthenticationController {
     }
 
     /**
-     * Completes passwordless authentication using SMS verification code.
+     * Endpoint for passwordless authentication via SMS.
      * <p>
-     * If the account does not exist, it will be created automatically.
-     * On success, returns JWT access token and sets refresh token in HttpOnly cookie.
+     * This endpoint validates the one-time SMS code sent to the user's phone.
+     * If the account does not exist, a new account will be created only if the
+     * {@code personalDataConsent} field is true. Otherwise, a {@code 400 Bad Request}
+     * is returned indicating that consent is required.
+     * <p>
+     * On success, returns a JWT access token and sets a refresh token as an
+     * HttpOnly cookie.
+     * <p>
+     * Flow:
+     * 1. Verify OTP code.
+     * 2. Authenticate existing user or create a new user with consent.
+     * 3. Generate JWT access and refresh tokens.
      *
-     * @param request  {@link SmsVerifyRequest} containing phone number and verification code
-     * @param response HTTP response used to attach refresh token cookie
-     * @return {@link AuthenticationResponse} containing access token
+     * @param request  {@link SmsVerifyRequest} containing phone number, OTP code,
+     *                 and optional {@code personalDataConsent} (required only for new users)
+     * @param response HTTP response to attach refresh token cookie
+     * @return {@link AuthenticationResponse} containing JWT access token
      */
     @Operation(
-            summary = "Verify SMS code",
-            description = "Validates the SMS code. Creates a new account if necessary and returns JWT tokens"
+            summary = "Verify SMS code for passwordless login/registration",
+            description = "Validates the one-time SMS code. Creates a new account if it does not exist and the user has given personal data consent. Returns JWT tokens and sets the refresh token as an HttpOnly cookie."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Authentication successful",
                     content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid or expired code")
+            @ApiResponse(responseCode = "400", description = "Invalid or expired OTP code or consent not provided for new account")
     })
     @PostMapping("/sms/verify")
     public ResponseEntity<AuthenticationResponse> verifySmsCode(
@@ -108,12 +118,11 @@ public class AuthenticationController {
     ) {
         var tokens = authenticationService.verifySmsCode(request);
 
-        Optional.ofNullable(tokens.getRefreshToken())
-                .map(rt -> CookieUtils.createTokenCookie(
-                        rt,
-                        Duration.ofMillis(jwtProperties.getRefresh().getExpiration())
-                ))
-                .ifPresent(cookie -> response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString()));
+        var cookie = CookieUtils.createTokenCookie(
+                tokens.getRefreshToken(),
+                Duration.ofMillis(jwtProperties.getRefresh().getExpiration())
+        );
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         return ResponseEntity.ok(new AuthenticationResponse(tokens.getToken()));
     }

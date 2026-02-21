@@ -11,12 +11,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import ru.zeker.common.model.BaseEntity;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Objects;
 
 @ToString(onlyExplicitlyIncluded = true)
@@ -30,7 +26,7 @@ import java.util.Objects;
         @Index(columnList = "phone", unique = true),
         @Index(columnList = "email", unique = true)
 })
-public class Account extends BaseEntity implements UserDetails {
+public class Account extends BaseEntity {
 
     @Column(nullable = false, unique = true)
     private String phone;
@@ -41,31 +37,6 @@ public class Account extends BaseEntity implements UserDetails {
     @Column(nullable = false)
     @Builder.Default
     private boolean personalDataConsent = false;
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public String getUsername() {
-        return phone;
-    }
-
-    @Override
-    public String getPassword() {
-        return null;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
 
     @Override
     public final boolean equals(Object o) {

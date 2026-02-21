@@ -39,6 +39,7 @@
 - PGADMIN_DEFAULT_PASSWORD= Пароль для входа в pgAdmin
 
 - FRONT_URL= URL фронтенда, используется в email-ссылках и редиректах
+- API_DOMAIN= Домен на котором расположен бэк
 
 - ACCESS_TOKEN_DURATION= Время жизни Access Token (например: 900000) ms
 - REFRESH_TOKEN_DURATION= Время жизни Refresh Token (например: 2592000000) ms

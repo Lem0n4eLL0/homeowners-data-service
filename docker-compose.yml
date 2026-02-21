@@ -162,6 +162,7 @@ services:
     environment:
       ACTIVE_PROFILE: ${ACTIVE_PROFILE}
       FRONT_URL: ${FRONT_URL}
+      API_DOMAIN: ${API_DOMAIN}
       PRIVATE_KEY: file:///app/keys/private.pem
       PUBLIC_KEY: file:///app/keys/public.pem
       OTP_HMAC_SECRET_FILE: /app/keys/otp-hmac.key
@@ -227,6 +228,7 @@ services:
     restart: always
     environment:
       ACTIVE_PROFILE: ${ACTIVE_PROFILE}
+      API_DOMAIN: ${API_DOMAIN}
       POSTGRES_HOST: postgres:5432
       POSTGRES_USERNAME: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

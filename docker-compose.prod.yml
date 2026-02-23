@@ -45,11 +45,11 @@ services:
     restart: unless-stopped
     networks:
       - internal
-#TODO Пока не запушат фронт
-#  frontend:
-#    image: ghcr.io/${GHCR_OWNER:-lem0n4ell0}/frontend:${TAG:-latest}
-#    ports:
-#      - "3000:80"
-#    networks:
-#      - internal
-#    restart: always
+
+  frontend:
+    image: ghcr.io/${GHCR_OWNER:-lem0n4ell0}/frontend:${TAG:-latest}
+    ports:
+      - "3000:80"
+    networks:
+      - internal
+    restart: always

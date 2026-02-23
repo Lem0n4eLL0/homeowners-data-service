@@ -85,6 +85,10 @@ public class AuthenticationController {
      * Endpoint for passwordless authentication via SMS.
      * <p>
      * This endpoint validates the one-time SMS code sent to the user's phone.
+     * The OTP has a limited lifetime and a limited number of verification attempts
+     * (e.g. 5 failed attempts). After exceeding the maximum number of attempts,
+     * the code becomes invalid and a new one must be requested.
+     * <p>
      * If the account does not exist, a new account will be created only if the
      * {@code personalDataConsent} field is true. Otherwise, a {@code 400 Bad Request}
      * is returned indicating that consent is required.
@@ -94,8 +98,9 @@ public class AuthenticationController {
      * <p>
      * Flow:
      * 1. Verify OTP code.
-     * 2. Authenticate existing user or create a new user with consent.
-     * 3. Generate JWT access and refresh tokens.
+     * 2. Enforce attempt limit.
+     * 3. Authenticate existing user or create a new user with consent.
+     * 4. Generate JWT access and refresh tokens.
      *
      * @param request  {@link SmsVerifyRequest} containing phone number, OTP code,
      *                 and optional {@code personalDataConsent} (required only for new users)
@@ -104,7 +109,15 @@ public class AuthenticationController {
      */
     @Operation(
             summary = "Verify SMS code for passwordless login/registration",
-            description = "Validates the one-time SMS code. Creates a new account if it does not exist and the user has given personal data consent. Returns JWT tokens and sets the refresh token as an HttpOnly cookie."
+            description = """
+                        Validates the one-time SMS code.
+                        The OTP has a limited lifetime and a maximum number of failed attempts (e.g. 5).
+                        After exceeding the allowed number of attempts, the code becomes invalid
+                        and a new one must be requested.
+                        
+                        Creates a new account if it does not exist and the user has given personal data consent.
+                        Returns JWT tokens and sets the refresh token as an HttpOnly cookie.
+                    """
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Authentication successful",

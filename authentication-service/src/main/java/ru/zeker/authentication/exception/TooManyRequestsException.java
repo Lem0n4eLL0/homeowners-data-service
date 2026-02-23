@@ -8,4 +8,8 @@ public class TooManyRequestsException extends BaseException {
     public TooManyRequestsException() {
         super("Too many requests", HttpStatus.TOO_MANY_REQUESTS, ErrorCode.TOO_MANY_RESEND_VERIFICATION);
     }
+
+    public TooManyRequestsException(String message, ErrorCode errorCode) {
+        super(message, HttpStatus.TOO_MANY_REQUESTS, errorCode);
+    }
 }

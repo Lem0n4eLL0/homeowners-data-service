@@ -5,9 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import ru.zeker.authentication.exception.BadCredentialsException;
+import ru.zeker.authentication.exception.TooManyRequestsException;
 import ru.zeker.authentication.util.HmacUtils;
+import ru.zeker.common.exception.ErrorCode;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -22,6 +26,8 @@ public class OtpService {
     private static final Duration RESEND_COOLDOWN = Duration.ofSeconds(60);
     private static final String OTP_PREFIX = "otp:";
     private static final String OTP_COOLDOWN_PREFIX = "otp_cooldown:";
+    private static final String OTP_ATTEMPTS_PREFIX = "otp_attempts:";
+    private static final long MAX_ATTEMPTS = 5L;
 
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -44,11 +50,12 @@ public class OtpService {
     }
 
     public void verify(String phone, String code) {
-        var key = OTP_PREFIX + phone;
+        var otpKey = OTP_PREFIX + phone;
+        var attemptsKey = OTP_ATTEMPTS_PREFIX + phone;
 
         log.debug("Verifying OTP for phone={}", maskPhone(phone));
 
-        var storedHmac = Optional.ofNullable(redisTemplate.opsForValue().get(key))
+        var storedHmac = Optional.ofNullable(redisTemplate.opsForValue().get(otpKey))
                 .orElseThrow(() -> {
                     log.debug("OTP not found or expired for phone={}", maskPhone(phone));
                     return new BadCredentialsException("Invalid or expired code");
@@ -57,12 +64,30 @@ public class OtpService {
         var providedHmac = HmacUtils.hmacSha256(code, otpHmacSecret);
 
         if (!HmacUtils.equals(providedHmac, storedHmac)) {
-            log.debug("OTP mismatch for phone={}", maskPhone(phone));
+
+            var attempts = Objects.requireNonNull(
+                    redisTemplate.opsForValue().increment(attemptsKey)
+            );
+
+            // если ключ создан впервые — ставим TTL
+            if (attempts == 1L) {
+                redisTemplate.expire(attemptsKey, TTL);
+            }
+
+            if (attempts >= MAX_ATTEMPTS) {
+                redisDelete(otpKey, attemptsKey);
+
+                log.warn("OTP attempts exceeded for phone={}", maskPhone(phone));
+                throw new TooManyRequestsException("Too many attempts. Request new code.", ErrorCode.TOO_MANY_CODE_ATTEMPTS);
+            }
+
+            log.warn("OTP mismatch for phone={}, attempts={}/{}",
+                    maskPhone(phone), attempts, MAX_ATTEMPTS);
+
             throw new BadCredentialsException("Invalid or expired code");
         }
 
-        redisTemplate.delete(key);
-        redisTemplate.delete(OTP_COOLDOWN_PREFIX + phone);
+        redisDelete(otpKey, attemptsKey, OTP_COOLDOWN_PREFIX + phone);
 
         log.debug("OTP successfully verified and removed for phone={}", maskPhone(phone));
     }
@@ -73,5 +98,9 @@ public class OtpService {
 
     private String generateCode() {
         return String.valueOf(ThreadLocalRandom.current().nextInt(100000, 999999));
+    }
+
+    private void redisDelete(String... keys) {
+        redisTemplate.delete(List.of(keys));
     }
 }

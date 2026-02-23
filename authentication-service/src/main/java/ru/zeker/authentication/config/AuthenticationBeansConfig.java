@@ -27,11 +27,6 @@ public class AuthenticationBeansConfig {
     }
 
     @Bean
-    public JwtProperties jwtProperties() {
-        return new JwtProperties();
-    }
-
-    @Bean
     public JwtUtils jwtUtils(JwtProperties jwtProperties) {
         return new JwtUtils(jwtProperties);
     }

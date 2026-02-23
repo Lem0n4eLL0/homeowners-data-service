@@ -19,11 +19,6 @@ import java.util.concurrent.TimeUnit;
 public class GatewayConfig {
 
     @Bean
-    public JwtProperties jwtProperties() {
-        return new JwtProperties();
-    }
-
-    @Bean
     public Cache<String, Claims> claimsCache(JwtProperties jwtProperties) {
         return Caffeine.newBuilder()
                 .maximumSize(100_000)

@@ -78,18 +78,29 @@ public class AuthenticationService {
      * optionally creates a new account if it does not exist and the user has given
      * personal data consent, and issues JWT access and refresh tokens.
      * <p>
+     * Security:
+     * <ul>
+     *     <li>OTP code has a limited lifetime (TTL).</li>
+     *     <li>The number of failed verification attempts is limited (e.g. 5 attempts).</li>
+     *     <li>After exceeding the maximum number of attempts, the OTP becomes invalid
+     *     and a new code must be requested.</li>
+     * </ul>
+     * <p>
      * Flow:
      * 1. OTP code is verified via {@link OtpService}.
-     * 2. Existing user → authenticated.
-     * 3. New user → created only if {@code personalDataConsent = true}, otherwise
-     * {@link ConsentRequiredException} is thrown.
-     * 4. JWT access token is generated.
-     * 5. Refresh token is created and stored (e.g., in Redis) and returned to the client.
+     * 2. If the number of failed attempts exceeds the allowed limit,
+     *    {@link TooManyRequestsException} is thrown.
+     * 3. Existing user → authenticated.
+     * 4. New user → created only if {@code personalDataConsent = true}, otherwise
+     *    {@link ConsentRequiredException} is thrown.
+     * 5. JWT access token is generated.
+     * 6. Refresh token is created and stored (e.g., in Redis) and returned to the client.
      *
      * @param request {@link SmsVerifyRequest} containing the phone number, OTP code,
      *                and optional personalDataConsent for new user registration.
      * @return {@link Tokens} containing JWT access and refresh tokens.
      * @throws BadCredentialsException  if OTP is invalid or expired
+     * @throws TooManyRequestsException if maximum OTP verification attempts are exceeded
      * @throws ConsentRequiredException if the user does not exist and consent is not given
      */
     public Tokens verifySmsCode(SmsVerifyRequest request) {

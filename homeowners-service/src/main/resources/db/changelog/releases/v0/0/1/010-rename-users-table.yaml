@@ -1,0 +1,8 @@
+databaseChangeLog:
+    - changeSet:
+        id: 010-rename-users-table
+        author: CatCus12
+        changes:
+          - renameTable:
+              oldTableName: users
+              newTableName: personal_data

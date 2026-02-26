@@ -44,9 +44,9 @@ public class PropertyMembership extends BaseEntity {
     @ToString.Include
     private Property property;
 
-//    @Enumerated(EnumType.STRING)
-//    @Column(name = "role", nullable = false, length = 50)
-//    private Role role;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 50)
+    private Role role;
 
     @Override
     public final boolean equals(Object o) {

@@ -1,8 +1,0 @@
-databaseChangeLog:
-  - changeSet:
-      id: 011-drop-cadastral-number-properties-table
-      author: CatCus12
-      changes:
-        - dropColumn:
-            tableName: properties
-            columnName: cadastral_number

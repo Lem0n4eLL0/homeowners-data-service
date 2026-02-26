@@ -20,6 +20,8 @@ services:
       - pgdata:/var/lib/postgresql/data
     networks:
       - internal
+    ports:
+      - "5432:5432"
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -35,6 +37,22 @@ services:
       - ./pgadmin/servers.json:/pgadmin4/servers.json
     depends_on:
       - postgres
+    networks:
+      - internal
+  init-db:
+    image: postgres:15
+    depends_on:
+      postgres:
+        condition: service_started
+    volumes:
+      - ./init.sql:/init.sql
+    entrypoint: >
+      bash -c "
+      psql -h postgres -U admin -d homeowners -f /init.sql
+      "
+    environment:
+      PGPASSWORD: admin
+    restart: "no"
     networks:
       - internal
 

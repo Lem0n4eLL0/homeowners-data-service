@@ -31,8 +31,8 @@ import java.util.Objects;
 })
 public class Property extends BaseEntity {
 
-    @Column(name = "cadastral_number", nullable = false, unique = true)
-    private String cadastralNumber;
+//    @Column(name = "cadastral_number", nullable = false, unique = true)
+//    private String cadastralNumber;
 
     @Column(name = "city", nullable = false)
     private String city;

@@ -1,0 +1,64 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-application-table
+      author: CatCus12
+      changes:
+        - createTable:
+            tableName: order_additional_services
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: "CURRENT_TIMESTAMP"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: "CURRENT_TIMESTAMP"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: property_membership_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    unique: false
+              - column:
+                  name: additional_service_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    unique: false
+              - status:
+                  name: status
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: false
+
+        - createIndex:
+            tableName: order_additional_services
+            columns:
+              - column:
+                  name: property_memberships_id
+            indexName: idx_order_additional_services_property_memberships_id
+
+        - createIndex:
+            tableName: order_additional_services
+            columns:
+              - column:
+                  name: additional_service_id
+            indexName: idx_order_additional_services_additional_service_id
+

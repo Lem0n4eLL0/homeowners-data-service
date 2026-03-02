@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: 014-add-is-managed-by-us-to-companies
+      author: zeker
+      changes:
+        - addColumn:
+            tableName: companies
+            columns:
+              - column:
+                  name: is_managed_by_us
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false

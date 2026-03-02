@@ -12,6 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @SuperBuilder
 public class AccountResponse {
-    protected UUID id;
-    protected String email;
+    private UUID id;
+    private String phone;
+    private String email;
 }

@@ -35,6 +35,7 @@ springdoc:
     path: /swagger-ui.html
 
 app:
+  company-name: ${COMPANY_NAME}
   domain: ${API_DOMAIN:http://localhost:8080}
   version: 1
 

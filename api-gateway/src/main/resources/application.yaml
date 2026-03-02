@@ -45,6 +45,14 @@ spring:
                       filters:
                         - StripPrefix=2
 
+                    # === HOMEOWNERS SERVICE ===
+                    - id: homeowners-service-profile
+                      uri: http://homeowners-service:8082
+                      predicates:
+                        - Path=/api/v${app.version}/profile/**
+                      filters:
+                        - StripPrefix=2
+
                     # === Swagger passthrough ===
                     - id: authentication-service-docs
                       uri: http://authentication-service:8081

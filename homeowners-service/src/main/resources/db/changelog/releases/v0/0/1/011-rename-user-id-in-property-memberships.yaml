@@ -1,0 +1,35 @@
+databaseChangeLog:
+  - changeSet:
+      id: 011-rename-user-id-in-property-memberships
+      author: zeker
+      changes:
+        - renameColumn:
+            tableName: property_memberships
+            oldColumnName: user_id
+            newColumnName: personal_data_id
+            columnDataType: uuid
+
+        - dropForeignKeyConstraint:
+            baseTableName: property_memberships
+            constraintName: fk_property_memberships_user_id
+
+        - addForeignKeyConstraint:
+            baseTableName: property_memberships
+            baseColumnNames: personal_data_id
+            constraintName: fk_property_memberships_personal_data_id
+            referencedTableName: personal_data
+            referencedColumnNames: id
+
+        - dropIndex:
+            indexName: uk_property_memberships_user_property
+            tableName: property_memberships
+
+        - createIndex:
+            indexName: uk_property_memberships_personal_data_property
+            tableName: property_memberships
+            unique: true
+            columns:
+              - column:
+                  name: personal_data_id
+              - column:
+                  name: property_id

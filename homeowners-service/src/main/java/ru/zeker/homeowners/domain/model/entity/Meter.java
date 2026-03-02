@@ -21,6 +21,7 @@ import org.hibernate.proxy.HibernateProxy;
 import ru.zeker.common.model.BaseEntity;
 import ru.zeker.homeowners.domain.model.enums.MeterType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -51,7 +52,8 @@ public class Meter extends BaseEntity {
     private PersonalAccount personalAccount;
 
     @OneToMany(mappedBy = "meter", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MeterHistoryValue> historyValues;
+    @Builder.Default
+    private List<MeterHistoryValue> historyValues = new ArrayList<>();
 
     @Override
     public final boolean equals(Object o) {

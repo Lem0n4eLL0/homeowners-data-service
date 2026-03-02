@@ -62,7 +62,7 @@ public class AuthenticationController {
      * If an account with the provided phone number does not exist,
      * it will be created during successful verification step.
      *
-     * @param request {@link SmsRequest} containing the user's phone number
+     * @param request {@link SmsRequest} containing the personalData's phone number
      * @return HTTP 202 (Accepted) when the SMS request is successfully processed
      */
     @Operation(
@@ -84,7 +84,7 @@ public class AuthenticationController {
     /**
      * Endpoint for passwordless authentication via SMS.
      * <p>
-     * This endpoint validates the one-time SMS code sent to the user's phone.
+     * This endpoint validates the one-time SMS code sent to the personalData's phone.
      * The OTP has a limited lifetime and a limited number of verification attempts
      * (e.g. 5 failed attempts). After exceeding the maximum number of attempts,
      * the code becomes invalid and a new one must be requested.
@@ -99,7 +99,7 @@ public class AuthenticationController {
      * Flow:
      * 1. Verify OTP code.
      * 2. Enforce attempt limit.
-     * 3. Authenticate existing user or create a new user with consent.
+     * 3. Authenticate existing personalData or create a new personalData with consent.
      * 4. Generate JWT access and refresh tokens.
      *
      * @param request  {@link SmsVerifyRequest} containing phone number, OTP code,
@@ -115,7 +115,7 @@ public class AuthenticationController {
                         After exceeding the allowed number of attempts, the code becomes invalid
                         and a new one must be requested.
                         
-                        Creates a new account if it does not exist and the user has given personal data consent.
+                        Creates a new account if it does not exist and the personalData has given personal data consent.
                         Returns JWT tokens and sets the refresh token as an HttpOnly cookie.
                     """
     )
@@ -146,7 +146,7 @@ public class AuthenticationController {
      * Refresh token is retrieved from HttpOnly cookie.
      * A new refresh token is generated and replaces the old one.
      * <p>
-     * If the refresh token cookie is missing (e.g., user has not yet accepted personal data consent),
+     * If the refresh token cookie is missing (e.g., personalData has not yet accepted personal data consent),
      * a 400 Bad Request is returned.
      *
      * @param refreshToken refresh token from cookie
@@ -199,16 +199,16 @@ public class AuthenticationController {
     }
 
     /**
-     * Terminates all active sessions for the current user.
+     * Terminates all active sessions for the current personalData.
      * <p>
-     * All refresh tokens associated with the user are revoked.
+     * All refresh tokens associated with the personalData are revoked.
      * Current refresh token cookie is cleared.
      *
      * @param refreshToken refresh token from cookie
      * @param response     HTTP response used to clear cookie
      * @return HTTP 204 (No Content)
      */
-    @Operation(summary = "Logout from all devices", description = "Revokes all user refresh tokens and clears cookie")
+    @Operation(summary = "Logout from all devices", description = "Revokes all personalData refresh tokens and clears cookie")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "All sessions terminated"),
             @ApiResponse(responseCode = "400", description = "Invalid refresh token", content = @Content)

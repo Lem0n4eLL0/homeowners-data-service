@@ -1,4 +1,4 @@
-package ru.zeker.application.domain.model.dto.application;
+package ru.zeker.application.domain.model.dto.response.application;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,7 +10,7 @@ import ru.zeker.application.domain.model.enums.Status;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApplicationDto {
+public class ApplicationResponse {
     String title;
     Status status;
 }

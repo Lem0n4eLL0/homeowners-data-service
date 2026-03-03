@@ -16,7 +16,7 @@ import ru.zeker.common.model.BaseEntity;
 @NoArgsConstructor
 @Entity
 @Table(name = "additional_service")
-public class AdditionalService extends BaseEntity {
+public class AdditionalServiceEntity extends BaseEntity {
     @Size(min = 3, max = 100, message = "Title must be between {min} and {max} characters")
     @Column(name = "title", nullable = false, length = 100)
     String title;

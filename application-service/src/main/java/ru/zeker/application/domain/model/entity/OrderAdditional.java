@@ -17,7 +17,7 @@ import java.util.UUID;
         @Index(name = "idx_propertyMembershipsId", columnList = "propertyMembershipsId", unique = false),
 
 })
-public class OrderAdditionalService extends BaseEntity {
+public class OrderAdditional extends BaseEntity {
 
     @Column(name = "property_memberships_id", nullable = false)
     private UUID propertyMembershipsId;

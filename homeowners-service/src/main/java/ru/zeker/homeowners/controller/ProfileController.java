@@ -2,7 +2,6 @@ package ru.zeker.homeowners.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,7 +26,7 @@ import ru.zeker.homeowners.service.UserProfileService;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/profile")
+@RequestMapping("/profile")
 @RequiredArgsConstructor
 @Validated
 @Tag(name = "Profile API", description = "Управление профилем владельца недвижимости и верификация объектов")
@@ -235,13 +234,6 @@ public class ProfileController {
             )
     })
     public ResponseEntity<UserProfileResponse> verifyAndProfile(
-            @Parameter(
-                    description = "Уникальный идентификатор пользователя в системе авторизации",
-                    required = true,
-                    in = ParameterIn.QUERY,
-                    example = "550e8400-e29b-41d4-a716-446655440000",
-                    schema = @Schema(type = "string", format = "uuid")
-            )
             @RequestParam(AppHeaders.ACCOUNT_ID) UUID accountId,
 
             @Parameter(
@@ -334,13 +326,6 @@ public class ProfileController {
             )
     })
     public ResponseEntity<UserProfileResponse> getProfile(
-            @Parameter(
-                    description = "Уникальный идентификатор пользователя в системе авторизации",
-                    required = true,
-                    in = ParameterIn.QUERY,
-                    example = "550e8400-e29b-41d4-a716-446655440000",
-                    schema = @Schema(type = "string", format = "uuid")
-            )
             @RequestParam(AppHeaders.ACCOUNT_ID) UUID accountId
     ) {
         return ResponseEntity.ok(profileService.getProfileResponse(accountId));

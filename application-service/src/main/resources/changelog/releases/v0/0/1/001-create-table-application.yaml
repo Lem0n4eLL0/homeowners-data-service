@@ -30,7 +30,13 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: property_membership_id
+                  name: account_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    unique: false
+              - column:
+                  name: property_id
                   type: UUID
                   constraints:
                     nullable: false

@@ -19,8 +19,10 @@ import java.util.UUID;
 })
 public class OrderAdditional extends BaseEntity {
 
-    @Column(name = "property_memberships_id", nullable = false)
-    private UUID propertyMembershipsId;
+    @Column(name = "account_id", nullable = false)
+    private UUID accountId;
+    @Column(name = "property_id", nullable = false)
+    private UUID propertyId;
 
     @Column(name = "additional_service_id", nullable = false)
     private UUID additional_service_id;

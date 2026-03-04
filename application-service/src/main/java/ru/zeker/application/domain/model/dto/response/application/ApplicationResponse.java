@@ -10,7 +10,7 @@ import ru.zeker.application.domain.model.enums.Status;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApplicationResponse {
-    String title;
-    Status status;
-}
+public record ApplicationResponse (
+        String title,
+        Status status
+){}

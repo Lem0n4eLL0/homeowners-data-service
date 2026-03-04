@@ -20,8 +20,10 @@ import java.util.UUID;
 
 })
 public class Application extends BaseEntity {
-    @Column(name = "property_memberships_id", nullable = false)
-    private UUID propertyMembershipsId;
+    @Column(name = "account_id", nullable = false)
+    private UUID accountId;
+    @Column(name = "property_id", nullable = false)
+    private UUID propertyId;
     @Size(min = 3, max = 100, message = "Title must be between {min} and {max} characters")
     @Column(name = "title", nullable = false, length = 100)
     String title;

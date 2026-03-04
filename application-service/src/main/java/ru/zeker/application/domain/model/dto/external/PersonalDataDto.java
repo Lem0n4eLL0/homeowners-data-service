@@ -6,10 +6,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.UUID;
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class PersonalDataDto {
-    UUID personalDataId;
-}
+
+public record PersonalDataDto(
+        UUID personalDataId,
+        String firstName,
+        String lastName,
+        String surname
+) {}

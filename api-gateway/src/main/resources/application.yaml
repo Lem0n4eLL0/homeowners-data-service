@@ -28,63 +28,71 @@ spring:
                 allow-credentials: true
                 max-age: 3600
           routes:
-                    # === AUTH SERVICE ===
-                    - id: authentication-service-auth
-                      uri: http://authentication-service:8081
-                      predicates:
-                        - Path=/api/v${app.version}/auth/**
-                      filters:
-                        - StripPrefix=2
-                      metadata:
-                        auth-required: false
+            # === AUTH SERVICE ===
+            - id: authentication-service-auth
+              uri: http://authentication-service:8080
+              predicates:
+                - Path=/api/v${app.version}/auth/**
+              filters:
+                - StripPrefix=2
+              metadata:
+                auth-required: false
 
-                    - id: authentication-service-users
-                      uri: http://authentication-service:8081
-                      predicates:
-                        - Path=/api/v${app.version}/accounts/**
-                      filters:
-                        - StripPrefix=2
+            - id: authentication-service-users
+              uri: http://authentication-service:8080
+              predicates:
+                - Path=/api/v${app.version}/accounts/**
+              filters:
+                - StripPrefix=2
 
-                    # === Swagger passthrough ===
-                    - id: authentication-service-docs
-                      uri: http://authentication-service:8081
-                      predicates:
-                        - Path=/authentication-service/v3/api-docs/**
-                      filters:
-                        - StripPrefix=1
-                      metadata:
-                        auth-required: false
-                      order: -1
+            # === HOMEOWNERS SERVICE ===
+            - id: homeowners-service-profile
+              uri: http://homeowners-service:8080
+              predicates:
+                - Path=/api/v${app.version}/profile/**
+              filters:
+                - StripPrefix=2
 
-                    - id: authentication-service-docs-swagger
-                      uri: http://authentication-service:8081
-                      predicates:
-                        - Path=/authentication-service/swagger-ui.html
-                      filters:
-                        - StripPrefix=1
-                      metadata:
-                        auth-required: false
-                      order: -1
+            # === Swagger passthrough ===
+            - id: authentication-service-docs
+              uri: http://authentication-service:8080
+              predicates:
+                - Path=/authentication-service/v3/api-docs/**
+              filters:
+                - StripPrefix=1
+              metadata:
+                auth-required: false
+              order: -1
 
-                    - id: homeowners-service-docs
-                      uri: http://homeowners-service:8082
-                      predicates:
-                        - Path=/homeowners-service/v3/api-docs/**
-                      filters:
-                        - StripPrefix=1
-                      metadata:
-                        auth-required: false
-                      order: -1
+            - id: authentication-service-docs-swagger
+              uri: http://authentication-service:8080
+              predicates:
+                - Path=/authentication-service/swagger-ui.html
+              filters:
+                - StripPrefix=1
+              metadata:
+                auth-required: false
+              order: -1
 
-                    - id: homeowners-service-docs-swagger
-                      uri: http://homeowners-service:8082
-                      predicates:
-                        - Path=/homeowners-service/swagger-ui.html
-                      filters:
-                        - StripPrefix=1
-                      metadata:
-                        auth-required: false
-                      order: -1
+            - id: homeowners-service-docs
+              uri: http://homeowners-service:8080
+              predicates:
+                - Path=/homeowners-service/v3/api-docs/**
+              filters:
+                - StripPrefix=1
+              metadata:
+                auth-required: false
+              order: -1
+
+            - id: homeowners-service-docs-swagger
+              uri: http://homeowners-service:8080
+              predicates:
+                - Path=/homeowners-service/swagger-ui.html
+              filters:
+                - StripPrefix=1
+              metadata:
+                auth-required: false
+              order: -1
 
 server:
   port: 8080

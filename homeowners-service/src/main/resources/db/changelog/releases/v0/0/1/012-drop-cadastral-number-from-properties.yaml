@@ -1,0 +1,29 @@
+databaseChangeLog:
+  - changeSet:
+      id: 012-drop-cadastral-number-from-properties
+      author: zeker
+      changes:
+        - dropIndex:
+            indexName: uk_properties_cadastral_number
+            tableName: properties
+
+        - dropColumn:
+            columnName: cadastral_number
+            tableName: properties
+
+      rollback:
+        - addColumn:
+            tableName: properties
+            columns:
+              - column:
+                  name: cadastral_number
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: properties
+            indexName: uk_properties_cadastral_number
+            unique: true
+            columns:
+              - column:
+                  name: cadastral_number

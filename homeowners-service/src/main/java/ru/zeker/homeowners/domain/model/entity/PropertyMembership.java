@@ -1,9 +1,6 @@
 package ru.zeker.homeowners.domain.model.entity;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
@@ -17,7 +14,6 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
 import ru.zeker.common.model.BaseEntity;
-import ru.zeker.homeowners.domain.model.enums.Role;
 
 import java.util.Objects;
 
@@ -29,24 +25,20 @@ import java.util.Objects;
 @NoArgsConstructor
 @Entity
 @Table(name = "property_memberships", indexes = {
-        @Index(name = "uk_property_memberships_user_property",
-                columnList = "user_id, property_id", unique = true)
+        @Index(name = "uk_property_memberships_personal_data_property",
+                columnList = "personal_data_id, property_id", unique = true)
 })
 public class PropertyMembership extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "personal_data_id", nullable = false)
     @ToString.Include
-    private User user;
+    private PersonalData personalData;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "property_id", nullable = false)
     @ToString.Include
     private Property property;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false, length = 50)
-    private Role role;
 
     @Override
     public final boolean equals(Object o) {

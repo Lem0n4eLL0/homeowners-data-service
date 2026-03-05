@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 015-drop-role-property-membership
+      author: zeker
+      changes:
+        - dropColumn:
+            columnName: role
+            tableName: property_memberships

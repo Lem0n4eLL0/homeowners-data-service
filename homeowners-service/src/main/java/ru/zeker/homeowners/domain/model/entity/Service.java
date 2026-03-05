@@ -5,7 +5,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -18,8 +17,9 @@ import org.hibernate.proxy.HibernateProxy;
 import ru.zeker.common.model.BaseEntity;
 import ru.zeker.homeowners.domain.model.enums.ServiceCode;
 
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @ToString(onlyExplicitlyIncluded = true)
 @Getter
@@ -28,9 +28,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "services", indexes = {
-        @Index(name = "uk_services_code", columnList = "code", unique = true)
-})
+@Table(name = "services")
 public class Service extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
@@ -41,7 +39,8 @@ public class Service extends BaseEntity {
     private String name;
 
     @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PersonalAccount> personalAccounts;
+    @Builder.Default
+    private Set<PersonalAccountService> personalAccountServices = new HashSet<>();
 
     @Override
     public final boolean equals(Object o) {

@@ -1,0 +1,77 @@
+databaseChangeLog:
+  - changeSet:
+      id: 014-refactor-personal-accounts-to-many-services
+      author: zeker
+
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: personal_accounts
+            constraintName: fk_personal_accounts_service_id
+
+        - dropColumn:
+            tableName: personal_accounts
+            columnName: service_id
+
+        - dropUniqueConstraint:
+            tableName: personal_accounts
+            constraintName: personal_accounts_personal_number_key
+
+        - addUniqueConstraint:
+            tableName: personal_accounts
+            columnNames: personal_number, company_id
+            constraintName: uk_personal_number_company
+
+        - createTable:
+            tableName: personal_account_services
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_personal_account_services
+              - column:
+                  name: personal_account_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: service_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  constraints:
+                    nullable: false
+
+        - addUniqueConstraint:
+            tableName: personal_account_services
+            columnNames: personal_account_id, service_id
+            constraintName: uk_personal_account_service
+
+        - addForeignKeyConstraint:
+            baseTableName: personal_account_services
+            baseColumnNames: personal_account_id
+            referencedTableName: personal_accounts
+            referencedColumnNames: id
+            constraintName: fk_pas_personal_account
+
+        - addForeignKeyConstraint:
+            baseTableName: personal_account_services
+            baseColumnNames: service_id
+            referencedTableName: services
+            referencedColumnNames: id
+            constraintName: fk_pas_service

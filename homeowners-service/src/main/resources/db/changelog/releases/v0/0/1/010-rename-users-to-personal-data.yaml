@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-rename-users-to-personal-data
+      author: zeker
+      changes:
+        - renameTable:
+            oldTableName: users
+            newTableName: personal_data
+
+        - dropIndex:
+            indexName: uk_users_account_id
+            tableName: personal_data
+
+        - createIndex:
+            indexName: uk_personal_data_account_id
+            tableName: personal_data
+            unique: true
+            columns:
+              - column:
+                  name: account_id

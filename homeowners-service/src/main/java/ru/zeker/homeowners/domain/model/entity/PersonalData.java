@@ -15,8 +15,9 @@ import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
 import ru.zeker.common.model.BaseEntity;
 
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @ToString(onlyExplicitlyIncluded = true)
@@ -26,10 +27,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "users", indexes = {
-        @Index(name = "uk_users_account_id", columnList = "account_id", unique = true)
+@Table(name = "personal_data", indexes = {
+        @Index(name = "uk_personal_data_account_id", columnList = "account_id", unique = true)
 })
-public class User extends BaseEntity {
+public class PersonalData extends BaseEntity {
 
     @Column(nullable = false, unique = true)
     private UUID accountId;
@@ -43,8 +44,9 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String surname;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PropertyMembership> propertyMemberships;
+    @OneToMany(mappedBy = "personalData", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<PropertyMembership> propertyMemberships = new HashSet<>();
 
     @Override
     public final boolean equals(Object o) {
@@ -53,8 +55,8 @@ public class User extends BaseEntity {
         Class<?> oEffectiveClass = o instanceof HibernateProxy proxy ? proxy.getHibernateLazyInitializer().getPersistentClass() : o.getClass();
         Class<?> thisEffectiveClass = this instanceof HibernateProxy proxy ? proxy.getHibernateLazyInitializer().getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
-        User user = (User) o;
-        return getId() != null && Objects.equals(getId(), user.getId());
+        PersonalData personalData = (PersonalData) o;
+        return getId() != null && Objects.equals(getId(), personalData.getId());
     }
 
     @Override

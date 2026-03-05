@@ -7,8 +7,10 @@ import lombok.Getter;
 public enum ServiceCode {
     ELECTRICITY("Электричество"),
     GAS("Газ"),
-    WATER("Вода"),
-    TRASH("Вывоз мусора");
+    COLD_WATER("Холодная вода"),
+    HOT_WATER("Горячая вода"),
+    TRASH("Вывоз мусора"),
+    MANAGEMENT("Управляющая компания");
 
     private final String displayName;
 
@@ -16,7 +18,4 @@ public enum ServiceCode {
         this.displayName = displayName;
     }
 
-    public String getDisplayName() {
-        return displayName;
-    }
 }

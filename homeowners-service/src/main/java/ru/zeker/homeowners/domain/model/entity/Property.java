@@ -3,7 +3,6 @@ package ru.zeker.homeowners.domain.model.entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -16,8 +15,10 @@ import org.hibernate.proxy.HibernateProxy;
 import ru.zeker.common.model.BaseEntity;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @ToString(onlyExplicitlyIncluded = true)
 @Getter
@@ -26,13 +27,8 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "properties", indexes = {
-        @Index(name = "uk_properties_cadastral_number", columnList = "cadastral_number", unique = true)
-})
+@Table(name = "properties")
 public class Property extends BaseEntity {
-
-    @Column(name = "cadastral_number", nullable = false, unique = true)
-    private String cadastralNumber;
 
     @Column(name = "city", nullable = false)
     private String city;
@@ -50,10 +46,12 @@ public class Property extends BaseEntity {
     private String flatNumber;
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PropertyMembership> propertyMemberships;
+    @Builder.Default
+    private Set<PropertyMembership> propertyMemberships = new HashSet<>();
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PersonalAccount> personalAccounts;
+    @Builder.Default
+    private Set<PersonalAccount> personalAccounts = new HashSet<>();
 
     @Override
     public final boolean equals(Object o) {

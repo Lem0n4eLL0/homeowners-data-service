@@ -22,8 +22,10 @@ import ru.zeker.common.model.BaseEntity;
 import ru.zeker.homeowners.domain.model.enums.MeterType;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @ToString(onlyExplicitlyIncluded = true)
 @Getter
@@ -53,7 +55,7 @@ public class Meter extends BaseEntity {
 
     @OneToMany(mappedBy = "meter", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<MeterHistoryValue> historyValues = new ArrayList<>();
+    private Set<MeterHistoryValue> historyValues = new HashSet<>();
 
     @Override
     public final boolean equals(Object o) {

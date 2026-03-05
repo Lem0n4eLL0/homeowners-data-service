@@ -17,9 +17,9 @@ import org.hibernate.proxy.HibernateProxy;
 import ru.zeker.common.model.BaseEntity;
 import ru.zeker.homeowners.domain.model.enums.ServiceCode;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @ToString(onlyExplicitlyIncluded = true)
 @Getter
@@ -40,7 +40,7 @@ public class Service extends BaseEntity {
 
     @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<PersonalAccountService> personalAccountServices = new ArrayList<>();
+    private Set<PersonalAccountService> personalAccountServices = new HashSet<>();
 
     @Override
     public final boolean equals(Object o) {

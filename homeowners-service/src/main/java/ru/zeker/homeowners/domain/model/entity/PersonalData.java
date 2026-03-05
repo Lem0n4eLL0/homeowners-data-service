@@ -15,9 +15,9 @@ import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
 import ru.zeker.common.model.BaseEntity;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @ToString(onlyExplicitlyIncluded = true)
@@ -46,7 +46,7 @@ public class PersonalData extends BaseEntity {
 
     @OneToMany(mappedBy = "personalData", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<PropertyMembership> propertyMemberships = new ArrayList<>();
+    private Set<PropertyMembership> propertyMemberships = new HashSet<>();
 
     @Override
     public final boolean equals(Object o) {

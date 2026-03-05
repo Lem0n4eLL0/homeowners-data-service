@@ -56,7 +56,7 @@ public class UserProfileService {
         if (request.hasCompleteProfileData()) {
 
             personalData = personalDataRepository.findByAccountId(accountId)
-                    .orElseGet(() -> createNewProfile(accountId, request));
+                    .orElseGet(() -> personalDataRepository.save(createNewProfile(accountId, request)));
 
             personalDataMapper.updateFromRequest(request, personalData);
         }

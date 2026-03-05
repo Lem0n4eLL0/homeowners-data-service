@@ -30,28 +30,31 @@ import java.util.*;
 @Service
 public class ApplicationService {
     ApplicationRepository repository;
+
     ApplicationMapper mapper;
     ApplicationRequestMapper requestMapper;
+
     HomeownersServiceClient client;
     AutentificationServiceClient authClient;
+
     public List<ApplicationResponse> getMyApplications(UUID accountId){
        return mapper.toModelList(repository.findAllByAccountId(accountId));
 
     }
+
     public ApplicationAllResponse getApplication(UUID applicationId,UUID accountId){
         Application application = repository.findById(applicationId)
                 .orElseThrow(() -> new ApplicationNotFoundedException());
 
         PersonalDataDto personalDataDto=client.getPersonalData();
-        PropertyDto propertyDto=client.getProperty(application.getPropertyId());
         ContactsDto contactsDto=authClient.getContacts();
 
         return  ApplicationAllResponse.toApplicationAllResponse(application,
                 personalDataDto,
-                propertyDto,
                 contactsDto);
 
     }
+
     public ApplicationResponse createApplication(ApplicationRequest applicationRequest){
         Application application = requestMapper.toEntity(applicationRequest);
             Application saved = repository.save(application);

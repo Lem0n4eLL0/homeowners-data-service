@@ -16,7 +16,7 @@ public interface HomeownersServiceClient {
 //    @GetMapping("/property_membership/{id}")
 //    public ResponseEntity<PropertyMembershipDto> getPersonalData(@PathVariable("id") UUID accountId);
 
-    @GetMapping("/personal_data/")
+    @GetMapping("/profile/me")
     public PersonalDataDto getPersonalData();
 
     @GetMapping("/property/{id}")

@@ -11,5 +11,11 @@ public record PersonalDataDto(
         UUID personalDataId,
         String firstName,
         String lastName,
-        String surname
+        String surname,
+        UUID propertyId,
+        String city,
+        String corpus,
+        String flatNumber,
+        String houseNumber,
+        String street
 ) {}

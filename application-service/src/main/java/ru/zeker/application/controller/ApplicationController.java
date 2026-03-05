@@ -36,7 +36,7 @@ public class ApplicationController {
         return ResponseEntity.ok(applications);
     }
     @GetMapping("/my/{id}")
-    public ResponseEntity<ApplicationAllResponse> getMyApplications(@PathVariable("id") UUID id,
+    public ResponseEntity<ApplicationAllResponse> getMyApplication(@PathVariable("id") UUID id,
                                                                     @RequestHeader("Account-Id") UUID accountId
     ) {
         return ResponseEntity.ok(applicationService.getApplication(id,accountId));

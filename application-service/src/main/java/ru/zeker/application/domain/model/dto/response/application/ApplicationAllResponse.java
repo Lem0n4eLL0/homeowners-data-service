@@ -17,7 +17,6 @@ public record ApplicationAllResponse(
         Status status,
         LocalDateTime createdAt,
         PersonalDataDto personalDataDto,
-        PropertyDto propertyDto,
         ContactsDto contactsDto
 
 
@@ -25,7 +24,6 @@ public record ApplicationAllResponse(
     public static ApplicationAllResponse toApplicationAllResponse(
             Application application,
             PersonalDataDto personalData,
-            PropertyDto property,
             ContactsDto contacts) {
 
         return new ApplicationAllResponse(
@@ -35,7 +33,6 @@ public record ApplicationAllResponse(
                 application.getStatus(),
                 application.getCreatedAt(),
                 personalData,
-                property,
                 contacts
         );
     }

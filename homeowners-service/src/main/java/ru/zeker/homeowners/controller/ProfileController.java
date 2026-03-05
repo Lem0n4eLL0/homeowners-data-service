@@ -238,6 +238,7 @@ public class ProfileController {
             )
     })
     public ResponseEntity<UserProfileResponse> verifyAndProfile(
+            @Parameter(description = "Unique user identifier", hidden = true)
             @RequestHeader(ACCOUNT_ID) @NotNull UUID accountId,
 
             @Parameter(
@@ -330,6 +331,7 @@ public class ProfileController {
             )
     })
     public ResponseEntity<UserProfileResponse> getProfile(
+            @Parameter(description = "Unique user identifier", hidden = true)
             @RequestHeader(ACCOUNT_ID) @NotNull UUID accountId
     ) {
         return ResponseEntity.ok(profileService.getProfileResponse(accountId));

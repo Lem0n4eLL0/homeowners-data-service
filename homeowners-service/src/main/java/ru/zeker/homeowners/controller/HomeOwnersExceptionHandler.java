@@ -1,8 +1,8 @@
 package ru.zeker.homeowners.controller;
 
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.zeker.common.controller.GlobalExceptionHandler;
 
-@Component
+@RestControllerAdvice
 public class HomeOwnersExceptionHandler extends GlobalExceptionHandler {
 }

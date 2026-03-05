@@ -7,28 +7,32 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.zeker.common.headers.AppHeaders;
 import ru.zeker.homeowners.domain.dto.request.UserProfileVerifyRequest;
 import ru.zeker.homeowners.domain.dto.response.UserProfileResponse;
 import ru.zeker.homeowners.service.UserProfileService;
 
 import java.util.UUID;
 
+import static ru.zeker.common.headers.AppHeaders.ACCOUNT_ID;
+
 @RestController
 @RequestMapping("/profile")
 @RequiredArgsConstructor
 @Validated
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Profile API", description = "Управление профилем владельца недвижимости и верификация объектов")
 public class ProfileController {
 
@@ -234,7 +238,7 @@ public class ProfileController {
             )
     })
     public ResponseEntity<UserProfileResponse> verifyAndProfile(
-            @RequestParam(AppHeaders.ACCOUNT_ID) UUID accountId,
+            @RequestHeader(ACCOUNT_ID) @NotNull UUID accountId,
 
             @Parameter(
                     description = "Данные для обновления профиля и/или верификации объекта",
@@ -326,7 +330,7 @@ public class ProfileController {
             )
     })
     public ResponseEntity<UserProfileResponse> getProfile(
-            @RequestParam(AppHeaders.ACCOUNT_ID) UUID accountId
+            @RequestHeader(ACCOUNT_ID) @NotNull UUID accountId
     ) {
         return ResponseEntity.ok(profileService.getProfileResponse(accountId));
     }

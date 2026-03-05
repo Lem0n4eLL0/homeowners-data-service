@@ -15,8 +15,10 @@ import org.hibernate.proxy.HibernateProxy;
 import ru.zeker.common.model.BaseEntity;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @ToString(onlyExplicitlyIncluded = true)
 @Getter
@@ -45,11 +47,11 @@ public class Property extends BaseEntity {
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<PropertyMembership> propertyMemberships = new ArrayList<>();
+    private Set<PropertyMembership> propertyMemberships = new HashSet<>();
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<PersonalAccount> personalAccounts = new ArrayList<>();
+    private Set<PersonalAccount> personalAccounts = new HashSet<>();
 
     @Override
     public final boolean equals(Object o) {

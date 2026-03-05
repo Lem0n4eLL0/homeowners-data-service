@@ -16,8 +16,10 @@ import org.hibernate.proxy.HibernateProxy;
 import ru.zeker.common.model.BaseEntity;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 
 @ToString(onlyExplicitlyIncluded = true)
@@ -40,7 +42,7 @@ public class Company extends BaseEntity {
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<PersonalAccount> personalAccounts = new ArrayList<>();
+    private Set<PersonalAccount> personalAccounts = new HashSet<>();
 
     @Override
     public final boolean equals(Object o) {

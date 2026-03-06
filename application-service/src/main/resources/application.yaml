@@ -1,0 +1,99 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: ${ACTIVE_PROFILE}  # Default to 'dev' if not set
+
+  application:
+    name: application-service  # ← Имя твоего сервиса
+
+  # Конфигурация подключения к БД
+  datasource:
+    # Важно: currentSchema указывает, какую схему использовать по умолчанию для запросов
+    url: jdbc:postgresql://${POSTGRES_HOST}/${POSTGRES_DB}?currentSchema=application_service
+    driver-class-name: org.postgresql.Driver
+    username: ${POSTGRES_USERNAME:admin}
+    password: ${POSTGRES_PASSWORD:admin}
+    # Настройки пула соединений HikariCP
+    hikari:
+      schema: application_service
+
+
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+
+        default_schema: application_service
+
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    database: postgresql
+    show-sql: ${SHOW_SQL:false}
+
+
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+
+    default-schema: application_service
+
+    database-change-log-table: DATABASECHANGELOG
+    database-change-log-lock-table: DATABASECHANGELOGLOCK
+
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+    urls-primary-name: application-service
+
+# Кастомные настройки приложения
+app:
+  service-name: application-service
+  company-name: ${COMPANY_NAME:Zeker}
+  domain: ${API_DOMAIN:http://localhost:8080}
+  version: 1.0.0
+
+
+
+# -----------------------------
+# Dev профиль — DEBUG логирование
+# -----------------------------
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    ru.zeker: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# -----------------------------
+# Prod профиль — INFO логирование
+# -----------------------------
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  level:
+    root: WARN
+    org.springframework.web: INFO
+    ru.zeker: INFO
+    org.hibernate.SQL: OFF
+    org.hibernate.type.descriptor.sql.BasicBinder: OFF

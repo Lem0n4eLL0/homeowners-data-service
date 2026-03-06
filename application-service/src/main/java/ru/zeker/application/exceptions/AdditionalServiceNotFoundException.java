@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public class AdditionalServiceNotFoundException extends BaseException {
     public AdditionalServiceNotFoundException(){
-        super("Resource not founded", HttpStatus.NOT_FOUND,ErrorCode.ADDITIONAL_SERVICE_NOT_FOUNDED);
+        super("Resource not founded", HttpStatus.NOT_FOUND,ErrorCode.APPLICATION_SERVICE_NOT_FOUNDED);
     }
 
 }

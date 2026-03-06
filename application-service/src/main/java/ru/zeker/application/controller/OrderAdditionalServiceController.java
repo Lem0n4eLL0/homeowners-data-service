@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Validated
 @RestController
-@RequestMapping("/applications")
+@RequestMapping("/services")
 @RequiredArgsConstructor
 @Tag(
         name = "OrderAdditionalServiceController",
@@ -23,14 +23,15 @@ import java.util.UUID;
 )
 public class OrderAdditionalServiceController {
     OrderAdditionalService service;
-    @PostMapping("/additional_service")
+    @PostMapping
     public ResponseEntity<OrderAdditionalServiceResponse> addAdditionalService(@RequestBody OrderAdditionalServiceRequest orderAdditionalServiceRequest,
                                                                                @RequestHeader UUID accountId){
         return ResponseEntity.ok(service.createOrder(accountId,orderAdditionalServiceRequest));
 
     }
-    @GetMapping("/additional_service/my")
+    @GetMapping("/my")
     public ResponseEntity<List<OrderAdditionalServiceResponse>> getMyOrderAdditionalServices(@RequestHeader UUID accountId){
+        return ResponseEntity.ok(service.getMyOrders(accountId));
 
     }
 }

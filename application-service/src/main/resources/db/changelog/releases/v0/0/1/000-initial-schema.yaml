@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 000-create-schema-application-service
+      id: 000-initial-schema.yaml
       author: zeker
       changes:
         - sql:

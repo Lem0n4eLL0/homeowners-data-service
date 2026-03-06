@@ -8,7 +8,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
-import ru.zeker.application.client.AutentificationServiceClient;
+import ru.zeker.application.client.AutenticationServiceClient;
+import ru.zeker.application.client.AutenticationServiceClient;
 import ru.zeker.application.client.HomeownersServiceClient;
 import ru.zeker.application.domain.model.dto.external.ContactsDto;
 import ru.zeker.application.domain.model.dto.external.PersonalDataDto;
@@ -24,18 +25,18 @@ import ru.zeker.application.repository.ApplicationRepository;
 
 import java.util.*;
 
-@AllArgsConstructor
+
 @RequiredArgsConstructor
 @Slf4j
 @Service
 public class ApplicationService {
-    ApplicationRepository repository;
+    private final ApplicationRepository repository;
 
-    ApplicationMapper mapper;
-    ApplicationRequestMapper requestMapper;
+    private final ApplicationMapper mapper;
+    private final ApplicationRequestMapper requestMapper;
 
-    HomeownersServiceClient client;
-    AutentificationServiceClient authClient;
+    private final HomeownersServiceClient client;
+    private final AutenticationServiceClient authClient;
 
     public List<ApplicationResponse> getMyApplications(UUID accountId){
        return mapper.toModelList(repository.findAllByAccountId(accountId));

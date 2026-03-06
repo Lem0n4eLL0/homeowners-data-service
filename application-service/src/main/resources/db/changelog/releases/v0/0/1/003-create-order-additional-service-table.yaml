@@ -4,7 +4,7 @@ databaseChangeLog:
       author: CatCus12
       changes:
         - createTable:
-            tableName: order_additional_services
+            tableName: order_additional_service
             columns:
               - column:
                   name: id
@@ -47,22 +47,26 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     unique: false
-              - status:
+              - column:
                   name: status
-                  type: varchar(255)
-                  constraints:
-                    nullable: false
-                    unique: false
+                  type: VARCHAR(50)
+                  defaultValue: PENDING
 
         - createIndex:
-            tableName: order_additional_services
+            tableName: application
             columns:
               - column:
-                  name: property_memberships_id
-            indexName: idx_order_additional_services_property_memberships_id
+                  name: account_id
+            indexName: idx_order_application_account_id
+        - createIndex:
+            tableName: application
+            columns:
+              - column:
+                  name: property_id
+            indexName: idx_order_application_property_id
 
         - createIndex:
-            tableName: order_additional_services
+            tableName: order_additional_service
             columns:
               - column:
                   name: additional_service_id

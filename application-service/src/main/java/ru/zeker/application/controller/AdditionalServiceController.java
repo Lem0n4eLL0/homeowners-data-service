@@ -24,7 +24,7 @@ import java.util.UUID;
         description = "A controller for working with additional services"
 )
 public class AdditionalServiceController {
-    AdditionalService service;
+    private final AdditionalService service;
     @GetMapping
     public ResponseEntity<List<AdditionalServiceResponse>> getAdditionalServices(){
         return ResponseEntity.ok(service.getAllAdditionalServices());

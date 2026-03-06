@@ -53,17 +53,22 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     unique: false
-              - status:
+              - column:
                   name: status
-                  type: varchar(255)
-                  constraints:
-                    nullable: false
-                    unique: false
+                  type: VARCHAR(50)
+                  defaultValue: PENDING
 
         - createIndex:
             tableName: application
             columns:
               - column:
-                  name: property_memberships_id
-            indexName: idx_application_property_memberships_id
+                  name: account_id
+            indexName: idx_application_account_id
+        - createIndex:
+            tableName: application
+            columns:
+              - column:
+                  name: property_id
+            indexName: idx_application_property_id
+
 

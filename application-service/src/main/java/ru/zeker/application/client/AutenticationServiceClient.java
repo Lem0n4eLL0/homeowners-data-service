@@ -5,8 +5,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.zeker.application.domain.model.dto.external.ContactsDto;
 import ru.zeker.application.domain.model.dto.external.PersonalDataDto;
 
-@FeignClient(name = "homeowners-client", url = "http://authentication-service:8081")
-public interface AutentificationServiceClient {
+@FeignClient(
+        name = "authentication-service",
+        url = "${authentication.service.url:http://authentication-service:8080}"  // ← URL внутри Docker-сети
+)
+public interface AutenticationServiceClient {
     @GetMapping("/personal_data/")
     public ContactsDto getContacts();
 }

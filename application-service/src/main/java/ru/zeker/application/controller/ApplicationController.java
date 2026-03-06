@@ -27,7 +27,7 @@ import java.util.UUID;
 )
 @SecurityRequirement(name = "bearerAuth")
 public class ApplicationController {
-    ApplicationService applicationService;
+    private final ApplicationService applicationService;
     @GetMapping("/my")
     public ResponseEntity<List<ApplicationResponse>> getMyApplications(
             @RequestHeader("Account-Id") UUID accountId

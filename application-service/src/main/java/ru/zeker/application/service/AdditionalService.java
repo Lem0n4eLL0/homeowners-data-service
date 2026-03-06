@@ -18,9 +18,9 @@ import java.util.UUID;
 @Service
 public class AdditionalService {
 
-    AdditionalServiceRepository additionalServiceRepository;
-    AdditionalServiceMapper mapper;
-    AdditionalServiceInfoMapper infoMapper;
+    private final AdditionalServiceRepository additionalServiceRepository;
+    private final AdditionalServiceMapper mapper;
+    private final AdditionalServiceInfoMapper infoMapper;
 
     public List<AdditionalServiceResponse> getAllAdditionalServices(){
         List<AdditionalServiceEntity> additionalServiceEntities = additionalServiceRepository.findAll();

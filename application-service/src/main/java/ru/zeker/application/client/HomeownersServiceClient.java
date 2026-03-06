@@ -11,7 +11,10 @@ import ru.zeker.application.domain.model.dto.external.PropertyDto;
 
 import java.util.UUID;
 
-@FeignClient(name = "homeowners-client", url = "http://homeowners-service:8082")
+@FeignClient(
+        name = "homeowners-service",
+        url = "${homeowners.service.url:http://homeowners-service:8080}"  // ← URL внутри Docker-сети
+)
 public interface HomeownersServiceClient {
 //    @GetMapping("/property_membership/{id}")
 //    public ResponseEntity<PropertyMembershipDto> getPersonalData(@PathVariable("id") UUID accountId);

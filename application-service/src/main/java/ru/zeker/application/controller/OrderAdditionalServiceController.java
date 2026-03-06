@@ -22,7 +22,7 @@ import java.util.UUID;
         description = "A controller for working with additional service"
 )
 public class OrderAdditionalServiceController {
-    OrderAdditionalService service;
+    private final OrderAdditionalService service;
     @PostMapping
     public ResponseEntity<OrderAdditionalServiceResponse> addAdditionalService(@RequestBody OrderAdditionalServiceRequest orderAdditionalServiceRequest,
                                                                                @RequestHeader UUID accountId){

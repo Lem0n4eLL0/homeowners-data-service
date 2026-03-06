@@ -7,7 +7,7 @@ import ru.zeker.application.domain.model.entity.OrderAdditional;
 
 import java.util.List;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface OrderApplicationResponseMapper {
     OrderAdditional toEntity(OrderAdditionalServiceResponse orderAdditionalServiceResponse);
     OrderAdditionalServiceResponse toModel(OrderAdditional entity);

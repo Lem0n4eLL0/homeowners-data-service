@@ -17,9 +17,9 @@ import java.util.UUID;
 @Service
 public class OrderAdditionalService {
 
-    OrderAdditionalServiceRepository repository;
-    OrderApplicationRequestMapper mapper;
-    OrderApplicationResponseMapper responseMapper;
+    private final OrderAdditionalServiceRepository repository;
+    private final OrderApplicationRequestMapper mapper;
+    private final OrderApplicationResponseMapper responseMapper;
 
     public OrderAdditionalServiceResponse createOrder(UUID accountId, OrderAdditionalServiceRequest order){
         OrderAdditional orderAdditional=mapper.toEntity(order);

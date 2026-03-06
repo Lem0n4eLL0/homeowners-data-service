@@ -41,6 +41,8 @@ spring:
 
     default-schema: application_service
 
+    liquibase-schema: public
+
     database-change-log-table: DATABASECHANGELOG
     database-change-log-lock-table: DATABASECHANGELOGLOCK
 

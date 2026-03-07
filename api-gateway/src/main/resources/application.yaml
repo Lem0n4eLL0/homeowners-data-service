@@ -12,18 +12,17 @@ spring:
       server:
         webflux:
           globalcors:
+            add-to-simple-url-handler-mapping: true
             cors-configurations:
               '[/**]':
                 allowed-origin-patterns:
+                  - "https://brigada-kanbanov.ru"
+                  - "https://api.brigada-kanbanov.ru"
                   - "http://localhost:*"
-                  - ${FRONT_URL}
-                  - ${API_DOMAIN}
                 allowed-methods: "*"
                 allowed-headers: "*"
                 exposed-headers:
                   - Authorization
-                  - User-Name
-                  - User-Role
                   - Set-Cookie
                 allow-credentials: true
                 max-age: 3600

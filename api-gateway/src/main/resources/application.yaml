@@ -52,6 +52,21 @@ spring:
                 - Path=/api/v${app.version}/profile/**
               filters:
                 - StripPrefix=2
+            # === APPLICATION SERVICE ===
+            - id: application-service-services
+              uri: http://application-service:8080
+              predicates:
+                - Path=/api/v${app.version}/services/**
+              filters:
+                - StripPrefix=2
+            - id: application-service-application
+              uri: http://application-service:8080
+              predicates:
+                - Path=/api/v${app.version}/applications/**
+              filters:
+                - StripPrefix=2
+
+
 
             # === Swagger passthrough ===
             - id: authentication-service-docs

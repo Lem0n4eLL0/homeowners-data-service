@@ -30,13 +30,38 @@ import java.util.UUID;
         name = "Услуги",
         description = "API для работы с услугами: просмотр списка и получение деталей"
 )
+/**
+ * Контроллер для управления дополнительными услугами.
+ * <p>
+ * Предоставляет эндпоинты для:
+ * <ul>
+ *   <li>Просмотра каталога всех доступных услуг</li>
+ *   <li>Получения детальной информации о конкретной услуге</li>
+ * </ul>
+ * <p>
+ * <b>Особенности:</b>
+ * <ul>
+ *   <li>Эндпоинты публичные — не требуют аутентификации</li>
+ *   <li>Данные кэшируются на стороне клиента для улучшения производительности</li>
+ *   <li>Все ответы в формате JSON с единой структурой ошибок</li>
+ * </ul>
+ *
+ * @see AdditionalService
+ * @see AdditionalServiceResponse
+ * @see AdditionalServiceInfoResponse
+ */
 public class AdditionalServiceController {
     private final AdditionalService service;
 
     @Operation(
             summary = "Получить список всех услуг",
-            description = "Возвращает краткую информацию по всем доступным дополнительным услугам " +
-                    "(название, базовая цена, категория). Используется для отображения каталога услуг в личном кабинете."
+            description = """
+                Возвращает краткую информацию по всем доступным дополнительным услугам.
+                                        
+                **Использование:**
+                - Отображение каталога услуг в личном кабинете
+                - Фильтрация по категории на клиенте
+                """
     )
     @ApiResponses({
             @ApiResponse(
@@ -48,9 +73,25 @@ public class AdditionalServiceController {
                     )
             ),
             @ApiResponse(
+                    responseCode = "204",
+                    description = "Список пуст (нет доступных услуг)",
+                    content = @Content
+            ),
+            @ApiResponse(
                     responseCode = "500",
                     description = "Внутренняя ошибка сервера",
-                    content = @Content
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(example = """
+                                {
+                                  "timestamp": "2026-03-10T12:00:00",
+                                  "status": 500,
+                                  "errorCode": "INTERNAL_SERVER_ERROR",
+                                  "message": "An internal server error occurred. Please try again later",
+                                  "requestId": "abc-123"
+                                }
+                                """)
+                    )
             )
     })
     @GetMapping
@@ -59,25 +100,90 @@ public class AdditionalServiceController {
         return ResponseEntity.ok(service.getAllAdditionalServices());
     }
     @Operation(
-            summary = "Получение подробной информации о услуге",
-            description = "Возвращает краткую информацию по всем доступным дополнительным услугам " +
-                    "(название, базовая цена, категория). Используется для отображения каталога услуг в личном кабинете."
+            summary = "Получить подробную информацию об услуге",
+            description = """
+                Возвращает полную информацию об услуге: описание, цена, условия оказания.
+                                        
+                **Использование:**
+                - Детальная страница услуги
+                - Расчёт стоимости перед заказом
+                """
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Услуга получена",
+                    description = "Услуга успешно получена",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = AdditionalServiceResponse.class)
+                            schema = @Schema(implementation = AdditionalServiceInfoResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Некорректный формат ID услуги",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(example = """
+                                {
+                                  "timestamp": "2026-03-10T12:00:00",
+                                  "status": 400,
+                                  "errorCode": "INVALID_UUID",
+                                  "message": "ID услуги должен быть валидным UUID",
+                                  "requestId": "abc-123"
+                                }
+                                """)
                     )
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "Не найдено информации по услуге",
-                    content = @Content
+                    description = "Услуга с указанным ID не найдена",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(example = """
+                                {
+                                  "timestamp": "2026-03-10T12:00:00",
+                                  "status": 404,
+                                  "errorCode": "SERVICE_NOT_FOUND",
+                                  "message": "Услуга с указанным ID не найдена",
+                                  "requestId": "abc-123"
+                                }
+                                """)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Доступ к услуге запрещён",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(example = """
+                                {
+                                  "timestamp": "2026-03-10T12:00:00",
+                                  "status": 403,
+                                  "errorCode": "ACCESS_DENIED",
+                                  "message": "У вас нет прав на просмотр этой услуги",
+                                  "requestId": "abc-123"
+                                }
+                                """)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Внутренняя ошибка сервера",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(example = """
+                                {
+                                  "timestamp": "2026-03-10T12:00:00",
+                                  "status": 500,
+                                  "errorCode": "INTERNAL_SERVER_ERROR",
+                                  "message": "An internal server error occurred. Please try again later",
+                                  "requestId": "abc-123"
+                                }
+                                """)
+                    )
             )
     })
+
     @GetMapping("/{id}")
     public ResponseEntity<AdditionalServiceInfoResponse> getAdditionalServices(@PathVariable("id") UUID additionalServiceId){
         log.info("Получение подробной информации о услуге");

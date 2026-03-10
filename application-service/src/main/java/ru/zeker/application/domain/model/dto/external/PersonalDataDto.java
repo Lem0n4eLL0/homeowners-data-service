@@ -2,6 +2,7 @@ package ru.zeker.application.domain.model.dto.external;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,17 +24,41 @@ import java.util.UUID;
 public class PersonalDataDto {
 
     @JsonProperty("personalDataId")
+    @Schema(
+            description = "Уникальный идентификатор профиля",
+            example = "f7d73428-ad95-4ccb-bb3f-62ef10c25ca6",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private UUID personalDataId;
 
     @JsonProperty("firstName")
+    @Schema(
+            description = "Имя пользователя",
+            example = "Иван",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private String firstName;
 
     @JsonProperty("lastName")
+    @Schema(
+            description = "Фамилия пользователя",
+            example = "Иванов",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private String lastName;
 
     @JsonProperty("surname")
+    @Schema(
+            description = "Отчество пользователя",
+            example = "Иванович",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private String surname;
 
+    @Schema(
+            description = "Список привязанных объектов недвижимости",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @JsonProperty("properties")
     private List<UserPropertyDto> properties;
 

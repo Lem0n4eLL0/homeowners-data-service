@@ -109,6 +109,28 @@ spring:
                 auth-required: false
               order: -1
 
+            - id: application-service-docs
+              uri: http://application-service:8080
+              predicates:
+                - Path=/application-service/v3/api-docs/**
+              filters:
+                - StripPrefix=1
+              metadata:
+                auth-required: false
+              order: -1
+
+            - id: application-service-docs-swagger
+              uri: http://application-service:8080
+              predicates:
+                - Path=/application-service/swagger-ui.html
+              filters:
+                - StripPrefix=1
+              metadata:
+                auth-required: false
+              order: -1
+
+
+
 server:
   port: 8080
 

@@ -6,7 +6,7 @@ import ru.zeker.common.exception.ErrorCode;
 
 public class ResourceAlreadyExistsException extends BaseException {
     public ResourceAlreadyExistsException(String message) {
-        super(message +"alreade exist", HttpStatus.CONFLICT, ErrorCode.ALREADY_EXIST);
+        super(message +"already exist", HttpStatus.CONFLICT, ErrorCode.ALREADY_EXIST);
     }
 
 

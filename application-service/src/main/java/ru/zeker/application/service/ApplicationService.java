@@ -1,19 +1,16 @@
 package ru.zeker.application.service;
 
-import lombok.AllArgsConstructor;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.OptimisticLockingFailureException;
-import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import ru.zeker.application.client.AutenticationServiceClient;
 import ru.zeker.application.client.AutenticationServiceClient;
 import ru.zeker.application.client.HomeownersServiceClient;
 import ru.zeker.application.domain.model.dto.external.ContactsDto;
 import ru.zeker.application.domain.model.dto.external.PersonalDataDto;
-import ru.zeker.application.domain.model.dto.external.PropertyDto;
 import ru.zeker.application.domain.model.dto.external.UserPropertyDto;
 import ru.zeker.application.domain.model.dto.request.ApplicationRequest;
 import ru.zeker.application.domain.model.dto.response.application.ApplicationAllResponse;
@@ -21,8 +18,10 @@ import ru.zeker.application.domain.model.dto.response.application.ApplicationRes
 import ru.zeker.application.domain.model.entity.Application;
 import ru.zeker.application.domain.model.mapper.ApplicationMapper;
 import ru.zeker.application.domain.model.mapper.ApplicationRequestMapper;
-import ru.zeker.application.exceptions.ApplicationNotFoundedException;
+import ru.zeker.application.exceptions.ResourceNotFoundException;
+import ru.zeker.application.exceptions.ServiceException;
 import ru.zeker.application.repository.ApplicationRepository;
+import ru.zeker.common.exception.ErrorCode;
 
 import java.util.*;
 
@@ -40,16 +39,35 @@ public class ApplicationService {
     private final AutenticationServiceClient authClient;
 
     public List<ApplicationResponse> getMyApplications(UUID accountId){
-       return mapper.toModelList(repository.findAllByAccountId(accountId));
+        try {
+            return mapper.toModelList(repository.findAllByAccountId(accountId));
+        } catch (DataAccessException e) {
+            log.error("Database error while fetching applications for accountId={}", accountId, e);
+            throw new ServiceException("Failed to fetch applications", HttpStatus.SERVICE_UNAVAILABLE, ErrorCode.DATABASE_ERROR);
+        }
 
     }
 
     public ApplicationAllResponse getApplication(UUID applicationId,UUID accountId){
         Application application = repository.findById(applicationId)
-                .orElseThrow(() -> new ApplicationNotFoundedException());
+                .orElseThrow(() -> new ResourceNotFoundException(applicationId));
 
-        PersonalDataDto personalDataDto=client.getPersonalData();
+        PersonalDataDto personalDataDto;
+        try {
+            personalDataDto = client.getPersonalData();
+            log.info("Отправка запроса из application_service в homeowners_service для получения данных");
+        } catch (FeignException e) {
+            log.error("Failed to fetch personal data from homeowners-service: status={}, body={}",
+                    e.status(), e.contentUTF8(), e);
 
+            throw new ServiceException(
+                    "Не удалось получить данные профиля",
+                    HttpStatus.BAD_GATEWAY,
+                    ErrorCode.INTERNAL_SERVER_ERROR
+            );
+        }
+
+        log.info("Поиск объекта недвижимости из списка недвижимостей, к которым относится заявка");
         UserPropertyDto userPropertyDto = personalDataDto.getProperties() != null
                 ? personalDataDto.getProperties().stream()
                 .filter(p -> application.getPropertyId() != null &&
@@ -57,15 +75,26 @@ public class ApplicationService {
                 .findFirst()
                 .orElse(null)
                 : null;
+
         log.info("ПОЛУЧЕНО "+personalDataDto.getProperties().toString());
 
-
+        log.info("Установка полученного объекта недвижимости в ответ");
         personalDataDto.setProperties(userPropertyDto != null
                 ? List.of(userPropertyDto)
                 : List.of());
 
 
-        ContactsDto contactsDto=authClient.getContacts();
+        ContactsDto contactsDto;
+        try {
+            contactsDto = authClient.getContacts();
+        } catch (FeignException e) {
+            log.error("Failed to fetch contacts from authentication-service: status={}", e.status(), e);
+            throw new ServiceException(
+                    "Не удалось получить контактные данные",
+                    HttpStatus.BAD_GATEWAY,
+                    ErrorCode.INTERNAL_SERVER_ERROR
+            );
+        }
 
         return  ApplicationAllResponse.toApplicationAllResponse(application,
                 List.of(personalDataDto),
@@ -73,20 +102,27 @@ public class ApplicationService {
 
     }
 
-    public ApplicationResponse createApplication(ApplicationRequest applicationRequest,UUID accountId){
+    public ApplicationResponse createApplication(ApplicationRequest applicationRequest,UUID accountId) {
         Application application = requestMapper.toEntity(applicationRequest);
         application.setAccountId(accountId);
-            Application saved = repository.save(application);
-            try{
-                 return mapper.toModel(saved);
-            }catch(RuntimeException e){
-                throw new RuntimeException("Ошибка при создании заявки");
-            }
-
-
-
-
-
+        Application saved;
+        try {
+            saved = repository.save(application);
+        } catch (DataIntegrityViolationException e) {
+            throw new ServiceException(
+                    "Ошибка валидации данных",
+                    HttpStatus.BAD_REQUEST,
+                    ErrorCode.ERROR_VALIDATION
+            );
+        } catch (DataAccessException e) {
+            log.error("Database error while creating application for accountId={}", accountId, e);
+            throw new ServiceException(
+                    "Не удалось создать заявку из-за ошибки базы данных",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ErrorCode.DATABASE_ERROR
+            );
+        }
+        return mapper.toModel(saved);
     }
 
 }

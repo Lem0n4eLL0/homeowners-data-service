@@ -1,103 +1,96 @@
+
+
 package ru.zeker.application.domain.model.dto.external;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 /**
  * DTO для данных профиля пользователя.
-
+ * <p>
+ * Неизменяемый рекорд: для изменения полей используйте {@link #withProperties(List)}.
  */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Schema(description = "Профиль пользователя: личные данные и список привязанных объектов недвижимости")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PersonalDataDto {
+public record PersonalDataDto(
 
-    @JsonProperty("personalDataId")
-    @Schema(
-            description = "Уникальный идентификатор профиля",
-            example = "f7d73428-ad95-4ccb-bb3f-62ef10c25ca6",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    private UUID personalDataId;
+        @Schema(
+                description = "Уникальный идентификатор профиля",
+                example = "f7d73428-ad95-4ccb-bb3f-62ef10c25ca6",
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        )
+        @JsonProperty("personalDataId")
+        UUID personalDataId,
 
-    @JsonProperty("firstName")
-    @Schema(
-            description = "Имя пользователя",
-            example = "Иван",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    private String firstName;
+        @Schema(
+                description = "Имя пользователя",
+                example = "Иван",
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        )
+        @JsonProperty("firstName")
+        String firstName,
 
-    @JsonProperty("lastName")
-    @Schema(
-            description = "Фамилия пользователя",
-            example = "Иванов",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    private String lastName;
+        @Schema(
+                description = "Фамилия пользователя",
+                example = "Иванов",
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        )
+        @JsonProperty("lastName")
+        String lastName,
 
-    @JsonProperty("surname")
-    @Schema(
-            description = "Отчество пользователя",
-            example = "Иванович",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    private String surname;
+        @Schema(
+                description = "Отчество пользователя",
+                example = "Иванович",
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        )
+        @JsonProperty("surname")
+        String surname,
 
-    @Schema(
-            description = "Список привязанных объектов недвижимости",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @JsonProperty("properties")
-    private List<UserPropertyDto> properties;
+        @Schema(
+                description = "Список привязанных объектов недвижимости",
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        )
+        @JsonProperty("properties")
+        List<UserPropertyDto> properties
 
-
+) {
     /**
-     * Конструктор для быстрого создания с основными полями.
+     * Компактный конструктор: гарантирует, что `properties` никогда не будет `null`.
      */
-    public PersonalDataDto(UUID personalDataId, String firstName, String lastName) {
-        this.personalDataId = personalDataId;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.properties = List.of();  // Пустой список по умолчанию
-    }
-
-    /**
-     * Добавить объект недвижимости в список.
-     * Если список null — создаём новый.
-     */
-    public void addProperty(UserPropertyDto property) {
-        if (this.properties == null) {
-            this.properties = new ArrayList<>();
+    public PersonalDataDto {
+        if (properties == null) {
+            properties = List.of();
         }
-        this.properties.add(property);
     }
 
     /**
-     * Получить первый объект из списка (или null).
+     * Создать новый DTO с изменённым списком свойств (copy-with pattern).
+     * <p>
+     * Поскольку рекорд неизменяемый, этот метод возвращает новый экземпляр.
+     *
+     * @param newProperties новый список свойств
+     * @return новый экземпляр {@link PersonalDataDto} с обновлёнными свойствами
      */
-    public UserPropertyDto getFirstProperty() {
-        if (this.properties == null || this.properties.isEmpty()) {
-            return null;
-        }
-        return this.properties.get(0);
+    public PersonalDataDto withProperties(List<UserPropertyDto> newProperties) {
+        return new PersonalDataDto(
+                this.personalDataId,
+                this.firstName,
+                this.lastName,
+                this.surname,
+                newProperties != null ? newProperties : List.of()
+        );
     }
+
+
 
     /**
      * Проверить, есть ли объекты в списке.
      */
     public boolean hasProperties() {
-        return this.properties != null && !this.properties.isEmpty();
+        return properties != null && !properties.isEmpty();
     }
 }

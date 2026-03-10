@@ -1,6 +1,7 @@
 package ru.zeker.application.service;
 
 import feign.FeignException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -54,8 +55,9 @@ public class ApplicationService {
 
         PersonalDataDto personalDataDto;
         try {
-            personalDataDto = client.getPersonalData();
             log.info("Отправка запроса из application_service в homeowners_service для получения данных");
+            personalDataDto = client.getPersonalData();
+
         } catch (FeignException e) {
             log.error("Failed to fetch personal data from homeowners-service: status={}, body={}",
                     e.status(), e.contentUTF8(), e);
@@ -68,20 +70,18 @@ public class ApplicationService {
         }
 
         log.info("Поиск объекта недвижимости из списка недвижимостей, к которым относится заявка");
-        UserPropertyDto userPropertyDto = personalDataDto.getProperties() != null
-                ? personalDataDto.getProperties().stream()
+        UserPropertyDto userPropertyDto = personalDataDto.properties()!= null
+                ? personalDataDto.properties().stream()
                 .filter(p -> application.getPropertyId() != null &&
                         application.getPropertyId().equals(p.propertyId()))
                 .findFirst()
                 .orElse(null)
                 : null;
 
-        log.info("ПОЛУЧЕНО "+personalDataDto.getProperties().toString());
+        PersonalDataDto response=personalDataDto.withProperties(
+                userPropertyDto != null ? List.of(userPropertyDto) : List.of()
+        );
 
-        log.info("Установка полученного объекта недвижимости в ответ");
-        personalDataDto.setProperties(userPropertyDto != null
-                ? List.of(userPropertyDto)
-                : List.of());
 
 
         ContactsDto contactsDto;
@@ -101,7 +101,7 @@ public class ApplicationService {
                 contactsDto);
 
     }
-
+@Transactional
     public ApplicationResponse createApplication(ApplicationRequest applicationRequest,UUID accountId) {
         Application application = requestMapper.toEntity(applicationRequest);
         application.setAccountId(accountId);

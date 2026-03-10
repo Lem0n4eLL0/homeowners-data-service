@@ -14,6 +14,7 @@ import ru.zeker.application.client.HomeownersServiceClient;
 import ru.zeker.application.domain.model.dto.external.ContactsDto;
 import ru.zeker.application.domain.model.dto.external.PersonalDataDto;
 import ru.zeker.application.domain.model.dto.external.PropertyDto;
+import ru.zeker.application.domain.model.dto.external.UserPropertyDto;
 import ru.zeker.application.domain.model.dto.request.ApplicationRequest;
 import ru.zeker.application.domain.model.dto.response.application.ApplicationAllResponse;
 import ru.zeker.application.domain.model.dto.response.application.ApplicationResponse;
@@ -48,16 +49,33 @@ public class ApplicationService {
                 .orElseThrow(() -> new ApplicationNotFoundedException());
 
         PersonalDataDto personalDataDto=client.getPersonalData();
+
+        UserPropertyDto userPropertyDto = personalDataDto.getProperties() != null
+                ? personalDataDto.getProperties().stream()
+                .filter(p -> application.getPropertyId() != null &&
+                        application.getPropertyId().equals(p.propertyId()))
+                .findFirst()
+                .orElse(null)
+                : null;
+        log.info("ПОЛУЧЕНО "+personalDataDto.getProperties().toString());
+
+
+        personalDataDto.setProperties(userPropertyDto != null
+                ? List.of(userPropertyDto)
+                : List.of());
+
+
         ContactsDto contactsDto=authClient.getContacts();
 
         return  ApplicationAllResponse.toApplicationAllResponse(application,
-                personalDataDto,
+                List.of(personalDataDto),
                 contactsDto);
 
     }
 
-    public ApplicationResponse createApplication(ApplicationRequest applicationRequest){
+    public ApplicationResponse createApplication(ApplicationRequest applicationRequest,UUID accountId){
         Application application = requestMapper.toEntity(applicationRequest);
+        application.setAccountId(accountId);
             Application saved = repository.save(application);
             try{
                  return mapper.toModel(saved);

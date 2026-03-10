@@ -25,7 +25,7 @@ public class OrderAdditional extends BaseEntity {
     private UUID propertyId;
 
     @Column(name = "additional_service_id", nullable = false)
-    private UUID additional_service_id;
+    private UUID additionalServiceId;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)

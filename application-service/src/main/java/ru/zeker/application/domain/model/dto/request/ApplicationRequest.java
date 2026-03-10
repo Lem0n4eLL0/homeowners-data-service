@@ -14,8 +14,6 @@ import lombok.Builder.Default;
 public record ApplicationRequest(
         @NotNull(message = "Property ID is required")
         UUID propertyId,
-        @NotNull(message = "Property ID is required")
-        UUID accountId,
         @NotBlank(message = "Title is required")
         @Size(min = 3, max = 100, message = "Title must be between 3 and 100 characters")
         String title,

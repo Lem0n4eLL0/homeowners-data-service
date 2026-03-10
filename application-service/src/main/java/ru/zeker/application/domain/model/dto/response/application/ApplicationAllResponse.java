@@ -8,6 +8,7 @@ import ru.zeker.application.domain.model.entity.Application;
 import ru.zeker.application.domain.model.enums.Status;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 @Builder
 public record ApplicationAllResponse(
@@ -16,14 +17,14 @@ public record ApplicationAllResponse(
         String comment,
         Status status,
         LocalDateTime createdAt,
-        PersonalDataDto personalDataDto,
+        List<PersonalDataDto> personalDataDto,
         ContactsDto contactsDto
 
 
 ) {
     public static ApplicationAllResponse toApplicationAllResponse(
             Application application,
-            PersonalDataDto personalData,
+            List<PersonalDataDto> personalData,
             ContactsDto contacts) {
 
         return new ApplicationAllResponse(

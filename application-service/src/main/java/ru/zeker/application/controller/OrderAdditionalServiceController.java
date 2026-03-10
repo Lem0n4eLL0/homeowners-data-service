@@ -19,6 +19,8 @@ import ru.zeker.application.service.OrderAdditionalService;
 import java.util.List;
 import java.util.UUID;
 
+import static ru.zeker.common.headers.AppHeaders.ACCOUNT_ID;
+
 @Validated
 @RestController
 @RequestMapping("/services")
@@ -50,7 +52,7 @@ public class OrderAdditionalServiceController {
     })
     @PostMapping
     public ResponseEntity<OrderAdditionalServiceResponse> addAdditionalService(@RequestBody OrderAdditionalServiceRequest orderAdditionalServiceRequest,
-                                                                               @RequestHeader UUID accountId){
+                                                                               @RequestHeader(ACCOUNT_ID) UUID accountId){
         return ResponseEntity.ok(service.createOrder(accountId,orderAdditionalServiceRequest));
 
     }
@@ -74,7 +76,7 @@ public class OrderAdditionalServiceController {
                     content = @Content
             )
     })
-    public ResponseEntity<List<OrderAdditionalServiceResponse>> getMyOrderAdditionalServices(@RequestHeader UUID accountId){
+    public ResponseEntity<List<OrderAdditionalServiceResponse>> getMyOrderAdditionalServices(@RequestHeader(ACCOUNT_ID) UUID accountId){
         return ResponseEntity.ok(service.getMyOrders(accountId));
 
     }

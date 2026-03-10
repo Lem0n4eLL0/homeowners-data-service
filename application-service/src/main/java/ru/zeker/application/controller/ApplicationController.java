@@ -24,6 +24,8 @@ import ru.zeker.application.service.ApplicationService;
 import java.util.List;
 import java.util.UUID;
 
+import static ru.zeker.common.headers.AppHeaders.ACCOUNT_ID;
+
 @Validated
 @RestController
 @RequestMapping("/applications")
@@ -85,7 +87,7 @@ public class ApplicationController {
 
     @GetMapping("/my/{id}")
     public ResponseEntity<ApplicationAllResponse> getMyApplication(@PathVariable("id") UUID id,
-                                                                    @RequestHeader("Account-Id") UUID accountId
+                                                                    @RequestHeader(ACCOUNT_ID) UUID accountId
     ) {
         return ResponseEntity.ok(applicationService.getApplication(id,accountId));
 
@@ -111,9 +113,9 @@ public class ApplicationController {
     })
     @PostMapping
     public ResponseEntity createApplication(@RequestBody @Valid ApplicationRequest application,
-                                            @RequestHeader("Account-Id") UUID accountId){
+                                            @RequestHeader(ACCOUNT_ID) UUID accountId){
         log.info("Запрос на создание заявки");
-        ApplicationResponse applicationResponse = applicationService.createApplication(application);
+        ApplicationResponse applicationResponse = applicationService.createApplication(application,accountId);
         return ResponseEntity.status(HttpStatus.CREATED).body(applicationResponse);
 
 

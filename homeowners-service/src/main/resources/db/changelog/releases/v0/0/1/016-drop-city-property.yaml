@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 016-drop-city-property
+      author: zeker
+      changes:
+        - dropColumn:
+            columnName: city
+            tableName: properties

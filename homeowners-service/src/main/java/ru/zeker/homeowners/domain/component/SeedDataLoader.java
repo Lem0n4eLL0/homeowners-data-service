@@ -119,7 +119,6 @@ public class SeedDataLoader implements ApplicationRunner {
         for (int i = 1; i <= 30; i++) {
             properties.add(
                     Property.builder()
-                            .city("Москва")
                             .street("Ленина")
                             .houseNumber(String.valueOf(i))
                             .flatNumber(String.valueOf(100 + i))

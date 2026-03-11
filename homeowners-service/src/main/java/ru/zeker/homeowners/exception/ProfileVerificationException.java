@@ -83,4 +83,52 @@ public class ProfileVerificationException extends BaseException {
                 HttpStatus.BAD_REQUEST
         );
     }
+
+    public static ProfileVerificationException profileAlreadyExists() {
+        return new ProfileVerificationException(
+                ErrorCode.PROFILE_ALREADY_EXISTS,
+                "Пользователь уже зарегистрирован",
+                HttpStatus.CONFLICT
+        );
+    }
+
+    public static ProfileVerificationException emailAlreadyConfirmed() {
+        return new ProfileVerificationException(
+                ErrorCode.EMAIL_ALREADY_CONFIRMED,
+                "Email уже подтвержден для этого аккаунта",
+                HttpStatus.CONFLICT
+        );
+    }
+
+    public static ProfileVerificationException emailAlreadyUsed() {
+        return new ProfileVerificationException(
+                ErrorCode.EMAIL_ALREADY_USED,
+                "Email уже используется другим аккаунтом",
+                HttpStatus.CONFLICT
+        );
+    }
+
+    public static ProfileVerificationException emailCooldown() {
+        return new ProfileVerificationException(
+                ErrorCode.EMAIL_COOLDOWN,
+                "Запрос подтверждения email был сделан слишком недавно. Попробуйте позже",
+                HttpStatus.TOO_MANY_REQUESTS
+        );
+    }
+
+    public static ProfileVerificationException invalidEmailFormat() {
+        return new ProfileVerificationException(
+                ErrorCode.INVALID_EMAIL_FORMAT,
+                "Email имеет некорректный формат",
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    public static ProfileVerificationException emailVerificationFailed() {
+        return new ProfileVerificationException(
+                ErrorCode.EMAIL_VERIFICATION_FAILED,
+                "Ошибка при отправке письма для подтверждения email",
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
 }

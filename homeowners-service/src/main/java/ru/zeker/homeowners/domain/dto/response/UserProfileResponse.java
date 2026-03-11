@@ -8,6 +8,8 @@ public record UserProfileResponse(
         String firstName,
         String lastName,
         String surname,
-        List<UserPropertyLink> properties
+        String email,
+        String phone,
+        List<UserPropertyResponse> properties
 ) {
 }

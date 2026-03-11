@@ -1,4 +1,4 @@
-package ru.zeker.authentication.domain.dto.request;
+package ru.zeker.common.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;

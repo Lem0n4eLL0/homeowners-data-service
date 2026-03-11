@@ -1,6 +1,7 @@
 // src/main/java/ru/zeker/homeowners/service/UserProfileService.java
 package ru.zeker.homeowners.service;
 
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -8,22 +9,26 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.zeker.common.dto.request.EmailRequest;
+import ru.zeker.common.dto.response.AccountResponse;
 import ru.zeker.common.util.AddressNormalizer;
+import ru.zeker.homeowners.client.AuthenticationClient;
 import ru.zeker.homeowners.domain.dto.request.UserProfileVerifyRequest;
+import ru.zeker.homeowners.domain.dto.request.UserPropertyRequest;
 import ru.zeker.homeowners.domain.dto.response.UserProfileResponse;
-import ru.zeker.homeowners.domain.dto.response.UserPropertyLink;
+import ru.zeker.homeowners.domain.dto.response.UserPropertyResponse;
 import ru.zeker.homeowners.domain.model.entity.PersonalAccount;
 import ru.zeker.homeowners.domain.model.entity.PersonalData;
 import ru.zeker.homeowners.domain.model.entity.Property;
 import ru.zeker.homeowners.domain.model.entity.PropertyMembership;
 import ru.zeker.homeowners.exception.ProfileVerificationException;
 import ru.zeker.homeowners.mapper.PersonalDataMapper;
+import ru.zeker.homeowners.mapper.PropertyMapper;
 import ru.zeker.homeowners.repository.PersonalAccountRepository;
 import ru.zeker.homeowners.repository.PersonalDataRepository;
 import ru.zeker.homeowners.repository.PropertyMembershipRepository;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BiPredicate;
 
@@ -36,45 +41,48 @@ public class UserProfileService {
     private final PersonalAccountRepository personalAccountRepository;
     private final PropertyMembershipRepository membershipRepository;
     private final PersonalDataMapper personalDataMapper;
+    private final AuthenticationClient authenticationClient;
+    private final PropertyMapper propertyMapper;
 
-    /**
-     * Универсальный метод с гибкой логикой:
-     * <ul>
-     *   <li>Если переданы firstName + lastName → обновляем/создаем профиль</li>
-     *   <li>Если переданы personalAccountNumber + city + street + houseNumber → верифицируем объект</li>
-     *   <li>Можно отправить обе группы сразу → выполнится всё</li>
-     *   <li>Если ничего не передано → валидация DTO отклонит запрос</li>
-     * </ul>
-     */
     @Transactional
-    public UserProfileResponse verifyAndOnboard(UUID accountId,
-                                                UserProfileVerifyRequest request) {
+    public UserProfileResponse verify(UUID accountId,
+                                      UserProfileVerifyRequest request) {
 
-        PersonalData personalData = null;
-
-        // === Работа с профилем ===
-        if (request.hasCompleteProfileData()) {
-
-            personalData = personalDataRepository.findByAccountId(accountId)
-                    .orElseGet(() -> personalDataRepository.save(createNewProfile(accountId, request)));
-
-            personalDataMapper.updateFromRequest(request, personalData);
+        // === Проверяем, что профиль ещё не существует ===
+        if (personalDataRepository.existsByAccountId(accountId)) {
+            throw ProfileVerificationException.profileAlreadyExists();
         }
 
-        // === Работа с объектом ===
-        if (request.hasCompletePropertyData()) {
+        // === Создаем новый профиль ===
+        PersonalData personalData = personalDataMapper.toEntity(request, accountId);
+        personalData = personalDataRepository.save(personalData);
+        log.info("Создан новый профиль: accountId={}", accountId);
 
-            if (Objects.isNull(personalData)) {
-                personalData = personalDataRepository.findByAccountId(accountId)
-                        .orElseThrow(ProfileVerificationException::profileNotFound);
-            }
+        // === Верификация объекта недвижимости ===
+        PersonalAccount account = personalAccountRepository
+                .findByPersonalNumberWithDetails(request.personalAccountNumber())
+                .orElseThrow(ProfileVerificationException::accountNotFound);
 
-            performVerification(personalData, request);
+        if (!account.getCompany().isManagedByUs()) {
+            log.warn("Лицевой счет {} принадлежит сторонней компании: {}",
+                    request.personalAccountNumber(), account.getCompany().getName());
+            throw ProfileVerificationException.thirdPartyProvider();
         }
 
-        if (Objects.isNull(personalData)) {
-            throw ProfileVerificationException.profileNotFound();
+        Property property = account.getProperty();
+
+        validateAddress(property, request);
+
+        if (membershipRepository.existsByPersonalDataAndProperty(personalData, property)) {
+            log.warn("Объект уже привязан: accountId={}, propertyId={}",
+                    accountId, property.getId());
+            throw ProfileVerificationException.propertyAlreadyLinked();
         }
+
+        personalData.getPropertyMemberships().add(PropertyMembership.builder()
+                .personalData(personalData)
+                .property(property)
+                .build());
 
         try {
             personalData = personalDataRepository.save(personalData);
@@ -84,48 +92,12 @@ public class UserProfileService {
             throw ProfileVerificationException.persistenceError("Нарушение целостности данных");
         }
 
-        return buildProfileResponse(personalData);
-    }
+        sendEmailVerification(accountId, request.email());
 
-    private PersonalData createNewProfile(UUID accountId, UserProfileVerifyRequest request) {
-        log.info("Creating new profile for accountId: {}", accountId);
-        return personalDataMapper.toEntity(request, accountId);
-    }
-
-    private void performVerification(PersonalData personalData, UserProfileVerifyRequest request) {
-        PersonalAccount account = personalAccountRepository
-                .findByPersonalNumberWithDetails(request.personalAccountNumber())
-                .orElseThrow(ProfileVerificationException::accountNotFound);
-
-        if (!account.getCompany().isManagedByUs()) {
-            log.warn("Account {} belongs to third-party provider: {}",
-                    request.personalAccountNumber(), account.getCompany().getName());
-            throw ProfileVerificationException.thirdPartyProvider();
-        }
-
-        Property accountProperty = account.getProperty();
-
-        validateAddress(accountProperty, request);
-
-        if (membershipRepository.existsByPersonalDataAndProperty(personalData, accountProperty)) {
-            log.info("Property already linked: accountId={}, propertyId={}",
-                    personalData.getAccountId(), accountProperty.getId());
-            throw ProfileVerificationException.propertyAlreadyLinked();
-        }
-
-        personalData.getPropertyMemberships().add(PropertyMembership.builder()
-                .personalData(personalData)
-                .property(accountProperty)
-                .build());
+        return buildProfileResponse(personalData, accountId);
     }
 
     private void validateAddress(Property property, UserProfileVerifyRequest request) {
-
-        validateField("city",
-                "Город",
-                property.getCity(),
-                request.city(),
-                AddressNormalizer::matches);
 
         validateField("street",
                 "Улица",
@@ -215,11 +187,116 @@ public class UserProfileService {
     public UserProfileResponse getProfileResponse(UUID accountId) {
         PersonalData data = personalDataRepository.findByAccountId(accountId)
                 .orElseThrow(ProfileVerificationException::profileNotFound);
-        return buildProfileResponse(data);
+        return buildProfileResponse(data, accountId);
     }
 
-    private UserProfileResponse buildProfileResponse(PersonalData data) {
-        List<UserPropertyLink> properties = data.getPropertyMemberships().stream()
+    // === Обновление профиля ===
+    @Transactional
+    public UserProfileResponse updateProfile(UUID accountId, UserProfileVerifyRequest request) {
+        PersonalData personalData = personalDataRepository.findByAccountId(accountId)
+                .orElseThrow(ProfileVerificationException::profileNotFound);
+
+        personalDataMapper.updateFromRequest(request, personalData);
+
+        try {
+            personalData = personalDataRepository.save(personalData);
+        } catch (OptimisticLockingFailureException e) {
+            throw ProfileVerificationException.persistenceError("Конфликт версий данных при обновлении профиля");
+        } catch (DataIntegrityViolationException e) {
+            throw ProfileVerificationException.persistenceError("Нарушение целостности данных при обновлении профиля");
+        }
+
+        sendEmailVerification(accountId, request.email());
+
+        return buildProfileResponse(personalData, accountId);
+    }
+
+    // === Создание объекта недвижимости ===
+    @Transactional
+    public UserPropertyResponse createProperty(UUID accountId, UserPropertyRequest request) {
+        PersonalData personalData = personalDataRepository.findByAccountId(accountId)
+                .orElseThrow(ProfileVerificationException::profileNotFound);
+
+        PersonalAccount account = personalAccountRepository
+                .findByPersonalNumberWithDetails(request.personalAccountNumber())
+                .orElseThrow(ProfileVerificationException::accountNotFound);
+
+        if (!account.getCompany().isManagedByUs()) {
+            throw ProfileVerificationException.thirdPartyProvider();
+        }
+
+        Property property = account.getProperty();
+
+        if (membershipRepository.existsByPersonalDataAndProperty(personalData, property)) {
+            throw ProfileVerificationException.propertyAlreadyLinked();
+        }
+
+        PropertyMembership membership = PropertyMembership.builder()
+                .personalData(personalData)
+                .property(property)
+                .build();
+
+        personalData.getPropertyMemberships().add(membership);
+
+        try {
+            personalDataRepository.save(personalData);
+        } catch (OptimisticLockingFailureException | DataIntegrityViolationException e) {
+            throw ProfileVerificationException.persistenceError("Ошибка сохранения объекта недвижимости");
+        }
+
+        return propertyMapper.toDto(property, request.personalAccountNumber());
+    }
+
+    // === Обновление объекта недвижимости ===
+    @Transactional
+    public UserPropertyResponse updateProperty(UUID accountId, UUID propertyId, UserPropertyRequest request) {
+        PersonalData personalData = personalDataRepository.findByAccountId(accountId)
+                .orElseThrow(ProfileVerificationException::profileNotFound);
+
+        PropertyMembership membership = membershipRepository.findByPersonalDataAndPropertyId(personalData, propertyId)
+                .orElseThrow(() -> ProfileVerificationException.invalidInput("Объект недвижимости не найден для обновления"));
+
+        Property property = membership.getProperty();
+
+        // Обновляем адресные поля, если они пришли
+        if (StringUtils.isNotBlank(request.street())) property.setStreet(request.street());
+        if (StringUtils.isNotBlank(request.houseNumber())) property.setHouseNumber(request.houseNumber());
+        if (request.corpus() != null) property.setCorpus(request.corpus());
+        if (StringUtils.isNotBlank(request.flatNumber())) property.setFlatNumber(request.flatNumber());
+
+        try {
+            membershipRepository.save(membership);
+        } catch (OptimisticLockingFailureException | DataIntegrityViolationException e) {
+            throw ProfileVerificationException.persistenceError("Ошибка обновления объекта недвижимости");
+        }
+
+        return propertyMapper.toDto(property, request.personalAccountNumber());
+    }
+
+    // === Удаление объекта недвижимости (только связь Membership) ===
+    @Transactional
+    public UserPropertyResponse deleteProperty(UUID accountId, UUID propertyId) {
+        PersonalData personalData = personalDataRepository.findByAccountId(accountId)
+                .orElseThrow(ProfileVerificationException::profileNotFound);
+
+        PropertyMembership membership = membershipRepository.findByPersonalDataAndPropertyId(personalData, propertyId)
+                .orElseThrow(() -> ProfileVerificationException.invalidInput("Объект недвижимости не найден для удаления"));
+
+        Property property = membership.getProperty();
+
+        personalData.getPropertyMemberships().remove(membership);
+        membershipRepository.delete(membership);
+
+        return propertyMapper.toDto(property,
+                property.getPersonalAccounts().stream()
+                        .filter(pa -> pa.getCompany().isManagedByUs())
+                        .findFirst()
+                        .map(PersonalAccount::getPersonalNumber)
+                        .orElse(StringUtils.EMPTY));
+    }
+
+    private UserProfileResponse buildProfileResponse(PersonalData data, UUID accountId) {
+        List<UserPropertyResponse> properties = data.getPropertyMemberships().stream()
                 .map(membership -> {
                     Property prop = membership.getProperty();
 
@@ -229,16 +306,52 @@ public class UserProfileService {
                             .map(PersonalAccount::getPersonalNumber)
                             .orElse(StringUtils.EMPTY);
 
-                    return UserPropertyLink.fromProperty(prop, accountNumber);
+                    return propertyMapper.toDto(prop, accountNumber);
                 })
                 .toList();
+
+        AccountResponse account = authenticationClient.getAccount(accountId).getBody();
 
         return new UserProfileResponse(
                 data.getId(),
                 data.getFirstName(),
                 data.getLastName(),
                 data.getSurname(),
+                account.getEmail(),
+                account.getPhone(),
                 properties
         );
+    }
+
+    private void sendEmailVerification(UUID accountId, String email) {
+        if (StringUtils.isBlank(email)) return;
+
+        EmailRequest emailRequest = EmailRequest.builder()
+                .email(email)
+                .build();
+
+        try {
+            authenticationClient.requestEmailVerification(accountId, emailRequest);
+        } catch (FeignException e) {
+            int status = e.status();
+            switch (status) {
+                case 409 -> {
+                    String body = e.contentUTF8().toLowerCase();
+                    if (body.contains("already confirmed")) {
+                        log.warn("Email {} уже подтвержден для accountId={}", email, accountId);
+                        throw ProfileVerificationException.emailAlreadyConfirmed();
+                    } else if (body.contains("already used")) {
+                        log.warn("Email {} уже используется другим аккаунтом", email);
+                        throw ProfileVerificationException.emailAlreadyUsed();
+                    }
+                }
+                case 429 -> throw ProfileVerificationException.emailCooldown();
+                case 400 -> throw ProfileVerificationException.invalidEmailFormat();
+                default -> {
+                    log.error("Ошибка при запросе подтверждения email для {}: {}", email, e.contentUTF8(), e);
+                    throw ProfileVerificationException.emailVerificationFailed();
+                }
+            }
+        }
     }
 }

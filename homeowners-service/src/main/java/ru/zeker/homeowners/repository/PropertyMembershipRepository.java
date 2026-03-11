@@ -6,9 +6,12 @@ import ru.zeker.homeowners.domain.model.entity.PersonalData;
 import ru.zeker.homeowners.domain.model.entity.Property;
 import ru.zeker.homeowners.domain.model.entity.PropertyMembership;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface PropertyMembershipRepository extends JpaRepository<PropertyMembership, UUID> {
     boolean existsByPersonalDataAndProperty(PersonalData data, Property property);
+
+    Optional<PropertyMembership> findByPersonalDataAndPropertyId(PersonalData data, UUID propertyId);
 }

@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.zeker.authentication.domain.dto.Tokens;
 import ru.zeker.authentication.domain.dto.request.ConfirmationEmailRequest;
-import ru.zeker.authentication.domain.dto.request.EmailRequest;
+import ru.zeker.common.dto.request.EmailRequest;
 import ru.zeker.authentication.domain.dto.request.SmsRequest;
 import ru.zeker.authentication.domain.dto.request.SmsVerifyRequest;
 import ru.zeker.authentication.domain.dto.response.AccountExistsResponse;

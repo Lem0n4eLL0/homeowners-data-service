@@ -1,4 +1,4 @@
-package ru.zeker.authentication.domain.dto.response;
+package ru.zeker.common.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

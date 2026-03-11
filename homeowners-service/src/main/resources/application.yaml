@@ -39,6 +39,10 @@ app:
   domain: ${API_DOMAIN:http://localhost:8080}
   version: 1
 
+authentication:
+  service:
+    url: http://authentication-service:8080
+
 # -----------------------------
 # Dev профиль — DEBUG
 # -----------------------------

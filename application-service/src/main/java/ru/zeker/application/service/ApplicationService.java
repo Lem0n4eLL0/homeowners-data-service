@@ -65,7 +65,7 @@ public class ApplicationService {
             throw new ServiceException(
                     "Не удалось получить данные профиля",
                     HttpStatus.BAD_GATEWAY,
-                    ErrorCode.INTERNAL_SERVER_ERROR
+                    ErrorCode.EXTERNAL_SERVER_ERROR
             );
         }
 
@@ -92,7 +92,7 @@ public class ApplicationService {
             throw new ServiceException(
                     "Не удалось получить контактные данные",
                     HttpStatus.BAD_GATEWAY,
-                    ErrorCode.INTERNAL_SERVER_ERROR
+                    ErrorCode.EXTERNAL_SERVER_ERROR
             );
         }
 

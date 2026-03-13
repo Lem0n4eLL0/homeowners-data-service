@@ -33,9 +33,5 @@ public record OrderAdditionalServiceRequest(
         )
         Status status
 ) {
-    public OrderAdditionalServiceRequest {
-        if (status == null) {
-            status = Status.PENDING;
-        }
-    }
+
 }

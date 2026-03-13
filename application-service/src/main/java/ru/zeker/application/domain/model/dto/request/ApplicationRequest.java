@@ -53,9 +53,5 @@ public record ApplicationRequest(
         )
         Status status
 ) {
-    public ApplicationRequest {
-        if (status == null) {
-            status = Status.PENDING;
-        }
-    }
+
 }

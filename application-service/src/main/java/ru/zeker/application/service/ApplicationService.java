@@ -52,6 +52,9 @@ public class ApplicationService {
     public ApplicationAllResponse getApplication(UUID applicationId,UUID accountId){
         Application application = repository.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException(applicationId));
+        if(!application.getAccountId().equals(accountId)){
+            throw new ResourceNotFoundException(applicationId);
+        }
 
         PersonalDataDto personalDataDto;
         try {

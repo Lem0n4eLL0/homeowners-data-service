@@ -156,6 +156,9 @@ springdoc:
         url: /authentication-service/v3/api-docs
       - name: homeowners-service
         url: /homeowners-service/v3/api-docs
+      - name: application-service
+        url: /application-service/v3/api-docs
+
 
 # -----------------------------
 # Dev профиль — DEBUG

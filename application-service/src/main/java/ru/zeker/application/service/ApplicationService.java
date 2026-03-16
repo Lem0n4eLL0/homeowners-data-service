@@ -41,11 +41,15 @@ public class ApplicationService {
 
     public List<ApplicationResponse> getMyApplications(UUID accountId){
         try {
-            return mapper.toModelList(repository.findAllByAccountId(accountId));
+            List<ApplicationResponse> applications= mapper.toModelList(repository.findAllByAccountId(accountId));
+
+            return applications;
+
         } catch (DataAccessException e) {
             log.error("Database error while fetching applications for accountId={}", accountId, e);
             throw new ServiceException("Failed to fetch applications", HttpStatus.SERVICE_UNAVAILABLE, ErrorCode.DATABASE_ERROR);
         }
+
 
     }
 
@@ -72,20 +76,18 @@ public class ApplicationService {
             );
         }
 
-        log.info("Поиск объекта недвижимости из списка недвижимостей, к которым относится заявка");
-        UserPropertyDto userPropertyDto = personalDataDto.properties()!= null
-                ? personalDataDto.properties().stream()
-                .filter(p -> application.getPropertyId() != null &&
-                        application.getPropertyId().equals(p.propertyId()))
-                .findFirst()
-                .orElse(null)
-                : null;
-
-        PersonalDataDto response=personalDataDto.withProperties(
-                userPropertyDto != null ? List.of(userPropertyDto) : List.of()
-        );
-
-
+//        log.info("Поиск объекта недвижимости из списка недвижимостей, к которым относится заявка");
+//        UserPropertyDto userPropertyDto = personalDataDto.properties()!= null
+//                ? personalDataDto.properties().stream()
+//                .filter(p -> application.getPropertyId() != null &&
+//                        application.getPropertyId().equals(p.propertyId()))
+//                .findFirst()
+//                .orElse(null)
+//                : null;
+//
+//        PersonalDataDto response=personalDataDto.withProperties(
+//                userPropertyDto != null ? List.of(userPropertyDto) : List.of()
+//        );
 
         ContactsDto contactsDto;
         try {

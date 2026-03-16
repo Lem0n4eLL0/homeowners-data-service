@@ -23,6 +23,12 @@ public record AdditionalServiceResponse(
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         String title,
+        @Schema(
+            description = "Описание услуги услуги",
+            example = "Генеральная уборка квартиры с помощью воды из под крана",
+            requiredMode = Schema.RequiredMode.REQUIRED
+        )
+        String description,
 
         @Schema(
                 description = "Базовая стоимость услуги в рублях",

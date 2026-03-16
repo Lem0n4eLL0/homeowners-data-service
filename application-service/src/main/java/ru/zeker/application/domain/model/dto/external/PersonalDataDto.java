@@ -18,13 +18,13 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record PersonalDataDto(
 
-        @Schema(
-                description = "Уникальный идентификатор профиля",
-                example = "f7d73428-ad95-4ccb-bb3f-62ef10c25ca6",
-                requiredMode = Schema.RequiredMode.NOT_REQUIRED
-        )
-        @JsonProperty("personalDataId")
-        UUID personalDataId,
+//        @Schema(
+//                description = "Уникальный идентификатор профиля",
+//                example = "f7d73428-ad95-4ccb-bb3f-62ef10c25ca6",
+//                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+//        )
+//        @JsonProperty("personalDataId")
+//        UUID personalDataId,
 
         @Schema(
                 description = "Имя пользователя",
@@ -48,24 +48,9 @@ public record PersonalDataDto(
                 requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
         @JsonProperty("surname")
-        String surname,
-
-        @Schema(
-                description = "Список привязанных объектов недвижимости",
-                requiredMode = Schema.RequiredMode.NOT_REQUIRED
-        )
-        @JsonProperty("properties")
-        List<UserPropertyDto> properties
+        String surname
 
 ) {
-    /**
-     * Компактный конструктор: гарантирует, что `properties` никогда не будет `null`.
-     */
-    public PersonalDataDto {
-        if (properties == null) {
-            properties = List.of();
-        }
-    }
 
     /**
      * Создать новый DTO с изменённым списком свойств (copy-with pattern).
@@ -77,20 +62,12 @@ public record PersonalDataDto(
      */
     public PersonalDataDto withProperties(List<UserPropertyDto> newProperties) {
         return new PersonalDataDto(
-                this.personalDataId,
+//                this.personalDataId,
                 this.firstName,
                 this.lastName,
-                this.surname,
-                newProperties != null ? newProperties : List.of()
+                this.surname
         );
     }
 
 
-
-    /**
-     * Проверить, есть ли объекты в списке.
-     */
-    public boolean hasProperties() {
-        return properties != null && !properties.isEmpty();
-    }
 }

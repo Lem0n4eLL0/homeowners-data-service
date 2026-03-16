@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.zeker.homeowners.domain.dto.request.UserProfileVerifyRequest;
 import ru.zeker.homeowners.domain.dto.request.UserPropertyRequest;
+import ru.zeker.homeowners.domain.dto.request.UserUpdateProfileRequest;
 import ru.zeker.homeowners.domain.dto.response.UserProfileResponse;
 import ru.zeker.homeowners.domain.dto.response.UserPropertyResponse;
 import ru.zeker.homeowners.service.UserProfileService;
@@ -244,7 +245,7 @@ public class ProfileController {
     })
     public ResponseEntity<UserProfileResponse> updateProfile(
             @RequestHeader(ACCOUNT_ID) UUID accountId,
-            @RequestBody @Valid UserProfileVerifyRequest request
+            @RequestBody @Valid UserUpdateProfileRequest request
     ) {
         UserProfileResponse response = profileService.updateProfile(accountId, request);
         return ResponseEntity.ok(response);

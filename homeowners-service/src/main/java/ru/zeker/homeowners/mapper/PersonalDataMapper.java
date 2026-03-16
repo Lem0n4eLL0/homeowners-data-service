@@ -6,6 +6,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import ru.zeker.homeowners.domain.dto.request.UserProfileVerifyRequest;
+import ru.zeker.homeowners.domain.dto.request.UserUpdateProfileRequest;
 import ru.zeker.homeowners.domain.model.entity.PersonalData;
 
 import java.util.UUID;
@@ -20,7 +21,7 @@ public interface PersonalDataMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "accountId", ignore = true)
     @Mapping(target = "propertyMemberships", ignore = true)
-    void updateFromRequest(UserProfileVerifyRequest request,
+    void updateFromRequest(UserUpdateProfileRequest request,
                            @MappingTarget PersonalData entity);
 
 }

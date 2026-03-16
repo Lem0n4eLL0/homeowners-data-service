@@ -30,9 +30,6 @@ import java.util.Set;
 @Table(name = "properties")
 public class Property extends BaseEntity {
 
-    @Column(name = "city", nullable = false)
-    private String city;
-
     @Column(name = "street", nullable = false)
     private String street;
 

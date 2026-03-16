@@ -18,9 +18,6 @@ public record UserProfileVerifyRequest(
         @Schema(description = "Отчество пользователя", example = "Иванович", maxLength = 100)
         @Size(max = 100) String surname,
 
-        @Schema(description = "Город проживания", example = "Москва", maxLength = 100)
-        @NotBlank @Size(max = 100) String city,
-
         @Schema(description = "Название улицы", example = "Ленина", maxLength = 200)
         @NotBlank @Size(max = 200) String street,
 

@@ -18,12 +18,12 @@ import java.util.UUID;
 )
 public interface AuthenticationClient {
 
-    @GetMapping("/me")
+    @GetMapping("/accounts/me")
     ResponseEntity<AccountResponse> getAccount(
             @RequestHeader(AppHeaders.ACCOUNT_ID) UUID accountId
     );
 
-    @PostMapping("/email/request")
+    @PostMapping("/accounts/email/request")
     void requestEmailVerification(
             @RequestHeader(AppHeaders.ACCOUNT_ID) UUID accountId,
             @RequestBody EmailRequest request

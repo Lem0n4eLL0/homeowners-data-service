@@ -15,6 +15,7 @@ import ru.zeker.common.util.AddressNormalizer;
 import ru.zeker.homeowners.client.AuthenticationClient;
 import ru.zeker.homeowners.domain.dto.request.UserProfileVerifyRequest;
 import ru.zeker.homeowners.domain.dto.request.UserPropertyRequest;
+import ru.zeker.homeowners.domain.dto.request.UserUpdateProfileRequest;
 import ru.zeker.homeowners.domain.dto.response.UserProfileResponse;
 import ru.zeker.homeowners.domain.dto.response.UserPropertyResponse;
 import ru.zeker.homeowners.domain.model.entity.PersonalAccount;
@@ -192,7 +193,7 @@ public class UserProfileService {
 
     // === Обновление профиля ===
     @Transactional
-    public UserProfileResponse updateProfile(UUID accountId, UserProfileVerifyRequest request) {
+    public UserProfileResponse updateProfile(UUID accountId, UserUpdateProfileRequest request) {
         PersonalData personalData = personalDataRepository.findByAccountId(accountId)
                 .orElseThrow(ProfileVerificationException::profileNotFound);
 

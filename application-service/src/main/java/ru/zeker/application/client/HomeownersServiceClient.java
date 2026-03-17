@@ -8,18 +8,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.Getter;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import ru.zeker.application.config.FeignConfig;
-import ru.zeker.application.domain.model.dto.external.PersonalDataDto;
-import ru.zeker.application.domain.model.dto.external.PropertyDto;
-
-
-import java.util.List;
 import java.util.UUID;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import ru.zeker.application.config.FeignConfig;
+import ru.zeker.application.domain.model.dto.response.application.PersonalDataDto;
+import ru.zeker.common.headers.AppHeaders;
 
 /**
  * Feign-клиент для взаимодействия с homeowners-service.
@@ -29,7 +24,7 @@ import java.util.UUID;
 @FeignClient(
         name = "homeowners-service",
         url = "${homeowners.service.url:http://homeowners-service:8080}",
-        configuration = FeignConfig.class,
+//        configuration = FeignConfig.class,
         contextId = "homeownersServiceClient"
 )
 @Tag(name = "Homeowners Service API", description = "Клиент для вызовов к сервису управления жильцами и недвижимостью")
@@ -119,7 +114,7 @@ public interface HomeownersServiceClient {
     })
 
     @GetMapping("/profile/me")
-    public PersonalDataDto getPersonalData();
+    public PersonalDataDto getPersonalData( @RequestHeader(AppHeaders.ACCOUNT_ID) UUID accountId);
 
 
 

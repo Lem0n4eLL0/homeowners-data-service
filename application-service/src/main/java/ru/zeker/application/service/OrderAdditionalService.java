@@ -17,42 +17,44 @@ import ru.zeker.common.exception.ErrorCode;
 
 import java.util.List;
 import java.util.UUID;
+
 @Slf4j
 @AllArgsConstructor
 @Service
 public class OrderAdditionalService {
 
-    private final OrderAdditionalServiceRepository repository;
-    private final OrderApplicationRequestMapper mapper;
-    private final OrderApplicationResponseMapper responseMapper;
+  private final OrderAdditionalServiceRepository repository;
+  private final OrderApplicationRequestMapper mapper;
+  private final OrderApplicationResponseMapper responseMapper;
 
-    public OrderAdditionalServiceResponse createOrder(UUID accountId, OrderAdditionalServiceRequest order){
-        OrderAdditional orderAdditional=mapper.toEntity(order);
-        orderAdditional.setAccountId(accountId);
+  public OrderAdditionalServiceResponse createOrder(UUID accountId,
+      OrderAdditionalServiceRequest order) {
+    OrderAdditional orderAdditional = mapper.toEntity(order);
+    orderAdditional.setAccountId(accountId);
 
-        try{
-            repository.save(orderAdditional);
-        } catch (DataIntegrityViolationException e) {
-            throw new ServiceException(
-                    "Ошибка валидации данных",
-                    HttpStatus.BAD_REQUEST,
-                    ErrorCode.ERROR_VALIDATION
-            );
-        } catch (DataAccessException e) {
-            log.error("Database error while creating application for accountId={}", accountId, e);
-            throw new ServiceException(
-                    "Не удалось создать заказ из-за ошибки базы данных",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    ErrorCode.DATABASE_ERROR
-            );
-        }
-        return responseMapper.toModel(orderAdditional);
+    try {
+      repository.save(orderAdditional);
+    } catch (DataIntegrityViolationException e) {
+      throw new ServiceException(
+          "Ошибка валидации данных",
+          HttpStatus.BAD_REQUEST,
+          ErrorCode.ERROR_VALIDATION
+      );
+    } catch (DataAccessException e) {
+      log.error("Database error while creating application for accountId={}", accountId, e);
+      throw new ServiceException(
+          "Не удалось создать заказ из-за ошибки базы данных",
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          ErrorCode.DATABASE_ERROR
+      );
     }
+    return responseMapper.toModel(orderAdditional);
+  }
 
-    public List<OrderAdditionalServiceResponse> getMyOrders(UUID accountId){
-        List<OrderAdditional> orderAdditionals=repository.findAllByAccountId(accountId);
-        return responseMapper.toModelList(orderAdditionals);
-    }
+  public List<OrderAdditionalServiceResponse> getMyOrders(UUID accountId) {
+    List<OrderAdditional> orderAdditionals = repository.findAllByAccountId(accountId);
+    return responseMapper.toModelList(orderAdditionals);
+  }
 
 
 }

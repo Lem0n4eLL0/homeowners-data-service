@@ -10,9 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.zeker.application.client.AutenticationServiceClient;
 import ru.zeker.application.client.HomeownersServiceClient;
-import ru.zeker.application.domain.model.dto.external.ContactsDto;
-import ru.zeker.application.domain.model.dto.external.PersonalDataDto;
-import ru.zeker.application.domain.model.dto.external.UserPropertyDto;
+import ru.zeker.application.domain.model.dto.response.application.PersonalDataDto;
 import ru.zeker.application.domain.model.dto.request.ApplicationRequest;
 import ru.zeker.application.domain.model.dto.response.application.ApplicationAllResponse;
 import ru.zeker.application.domain.model.dto.response.application.ApplicationResponse;
@@ -63,7 +61,7 @@ public class ApplicationService {
         PersonalDataDto personalDataDto;
         try {
             log.info("Отправка запроса из application_service в homeowners_service для получения данных");
-            personalDataDto = client.getPersonalData();
+            personalDataDto = client.getPersonalData(accountId);
 
         } catch (FeignException e) {
             log.error("Failed to fetch personal data from homeowners-service: status={}, body={}",
@@ -89,21 +87,20 @@ public class ApplicationService {
 //                userPropertyDto != null ? List.of(userPropertyDto) : List.of()
 //        );
 
-        ContactsDto contactsDto;
-        try {
-            contactsDto = authClient.getContacts();
-        } catch (FeignException e) {
-            log.error("Failed to fetch contacts from authentication-service: status={}", e.status(), e);
-            throw new ServiceException(
-                    "Не удалось получить контактные данные",
-                    HttpStatus.BAD_GATEWAY,
-                    ErrorCode.EXTERNAL_SERVER_ERROR
-            );
-        }
+//        AccountResponse contactsDto;
+//        try {
+//            contactsDto = authClient.getContacts();
+//        } catch (FeignException e) {
+//            log.error("Failed to fetch contacts from authentication-service: status={}", e.status(), e);
+//            throw new ServiceException(
+//                    "Не удалось получить контактные данные",
+//                    HttpStatus.BAD_GATEWAY,
+//                    ErrorCode.EXTERNAL_SERVER_ERROR
+//            );
+//        }
 
         return  ApplicationAllResponse.toApplicationAllResponse(application,
-                List.of(personalDataDto),
-                contactsDto);
+                List.of(personalDataDto));
 
     }
 @Transactional

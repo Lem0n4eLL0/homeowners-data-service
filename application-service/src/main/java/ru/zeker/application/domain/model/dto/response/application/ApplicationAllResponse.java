@@ -2,8 +2,7 @@ package ru.zeker.application.domain.model.dto.response.application;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
-import ru.zeker.application.domain.model.dto.external.ContactsDto;
-import ru.zeker.application.domain.model.dto.external.PersonalDataDto;
+
 import ru.zeker.application.domain.model.entity.Application;
 import ru.zeker.application.domain.model.enums.Status;
 
@@ -58,19 +57,18 @@ public record ApplicationAllResponse(
                 description = "Данные профиля владельца заявки",
                 requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
-        List<PersonalDataDto> personalDataDto,
+        List<PersonalDataDto> personalDataDto
 
-        @Schema(
-                description = "Контактные данные владельца",
-                requiredMode = Schema.RequiredMode.NOT_REQUIRED
-        )
-        ContactsDto contactsDto
+//        @Schema(
+//                description = "Контактные данные владельца",
+//                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+//        )
+//        AccountResponse contactsDto
 
 ) {
     public static ApplicationAllResponse toApplicationAllResponse(
             Application application,
-            List<PersonalDataDto> personalData,
-            ContactsDto contacts) {
+            List<PersonalDataDto> personalData) {
 
         return new ApplicationAllResponse(
                 application.getId(),
@@ -78,8 +76,6 @@ public record ApplicationAllResponse(
                 application.getComment(),
                 application.getStatus(),
                 application.getCreatedAt(),
-                personalData,
-                contacts
-        );
+                personalData);
     }
 }

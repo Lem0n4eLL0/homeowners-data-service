@@ -1,18 +1,15 @@
 
 
-package ru.zeker.application.domain.model.dto.external;
+package ru.zeker.application.domain.model.dto.response.application;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.util.List;
-import java.util.UUID;
-
 /**
  * DTO для данных профиля пользователя.
  * <p>
- * Неизменяемый рекорд: для изменения полей используйте {@link #withProperties(List)}.
+ * }.
  */
 @Schema(description = "Профиль пользователя: личные данные и список привязанных объектов недвижимости")
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -52,22 +49,8 @@ public record PersonalDataDto(
 
 ) {
 
-    /**
-     * Создать новый DTO с изменённым списком свойств (copy-with pattern).
-     * <p>
-     * Поскольку рекорд неизменяемый, этот метод возвращает новый экземпляр.
-     *
-     * @param newProperties новый список свойств
-     * @return новый экземпляр {@link PersonalDataDto} с обновлёнными свойствами
-     */
-    public PersonalDataDto withProperties(List<UserPropertyDto> newProperties) {
-        return new PersonalDataDto(
-//                this.personalDataId,
-                this.firstName,
-                this.lastName,
-                this.surname
-        );
-    }
+
+
 
 
 }

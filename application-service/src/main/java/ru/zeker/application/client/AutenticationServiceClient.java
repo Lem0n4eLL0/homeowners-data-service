@@ -1,8 +1,6 @@
 package ru.zeker.application.client;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,17 +9,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.zeker.application.config.FeignConfig;
-import ru.zeker.application.domain.model.dto.external.ContactsDto;
-import ru.zeker.application.domain.model.dto.external.PersonalDataDto;
+import ru.zeker.application.config.FeignConfig;import ru.zeker.common.dto.response.AccountResponse;
+
 /**
  * Feign-клиент для взаимодействия с authentication-service.
  * Предоставляет методы для получения данных аккаунта и контактов пользователя.
  */
 @FeignClient(
         name = "authentication-service",
-        url = "${authentication.service.url:http://authentication-service:8080}",
-configuration = FeignConfig .class
+        url = "${authentication.service.url:http://authentication-service:8080}"
+//        configuration = FeignConfig .class
 )
 public interface AutenticationServiceClient {
     /**
@@ -31,7 +28,7 @@ public interface AutenticationServiceClient {
      * Требует заголовок {@code Account-Id} для идентификации пользователя.
      *
      *
-     * @return {@link ContactsDto} с телефоном и email пользователя
+     * @return {@link AccountResponse} с телефоном и email пользователя
      * @throws feign.FeignException если сервис недоступен или возвращает ошибку
      */
 
@@ -53,7 +50,7 @@ public interface AutenticationServiceClient {
                     description = "Контактные данные успешно получены",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ContactsDto.class)
+                            schema = @Schema(implementation = AccountResponse.class)
                     ),
                     headers = {
                             @Header(name = "X-Request-ID", description = "ID запроса для трассировки",
@@ -108,5 +105,5 @@ public interface AutenticationServiceClient {
     })
 
     @GetMapping("/accounts/me")
-    public ContactsDto getContacts();
+    public AccountResponse getContacts();
 }

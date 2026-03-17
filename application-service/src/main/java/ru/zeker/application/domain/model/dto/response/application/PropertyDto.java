@@ -1,4 +1,4 @@
-package ru.zeker.application.domain.model.dto.external;
+package ru.zeker.application.domain.model.dto.response.application;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -16,13 +16,6 @@ public record PropertyDto(
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         UUID propertyId,
-
-        @Schema(
-                description = "Город",
-                example = "Москва",
-                requiredMode = Schema.RequiredMode.NOT_REQUIRED
-        )
-        String city,
 
         @Schema(
                 description = "Корпус/строение",

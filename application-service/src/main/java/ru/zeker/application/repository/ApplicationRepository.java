@@ -12,4 +12,5 @@ import java.util.UUID;
 public interface ApplicationRepository extends JpaRepository<Application, UUID> {
     List<Application> findAllByAccountId(UUID accountId);
 
+    List<Application> findAllByPropertyId(UUID propertyId);
 }

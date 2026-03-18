@@ -3,6 +3,7 @@ package ru.zeker.application.domain.model.dto.response.application;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import ru.zeker.application.domain.model.entity.Application;
 import ru.zeker.application.domain.model.enums.Status;
 
 /**
@@ -18,11 +19,10 @@ public record ApplicationResponse(
     )
     UUID id,
     @Schema(
-        description = "id объекта недвижимости",
-        example = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        description = "Объект недвижимости",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
-    UUID propertyId,
+    PropertyDto property,
     @Schema(
         description = "Дата создания",
         example = "2023-10-27T14:30:00",
@@ -31,10 +31,6 @@ public record ApplicationResponse(
     LocalDateTime createdAt,
     @Schema(
         description = "Создатель заявки",
-        example = "firstName: Иван\n"
-            + "lastName: Иванов\n"
-            + "surName:Иванович" ,
-
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     PersonalDataDto createdBy,
@@ -47,7 +43,7 @@ public record ApplicationResponse(
     String title,
     @Schema(
         description = "Комментарий к заявке",
-        example = "Уберите 10 листьев и все желуди пожалуйста!!!!",
+        example = "Уберите 10 листьев пожалуйста!!!!",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     String comment,
@@ -60,4 +56,23 @@ public record ApplicationResponse(
         )
         Status status
 
-) {}
+) {
+    /**
+     * Фабричный метод для сборки ответа из сущности и вспомогательных данных.
+     */
+    public static ApplicationResponse of(
+        Application application,
+        PropertyDto property,
+        PersonalDataDto creator
+    ) {
+        return new ApplicationResponse(
+            application.getId(),
+            property,
+            application.getCreatedAt(),
+            creator,
+            application.getTitle(),
+            application.getComment(),
+            application.getStatus()
+        );
+    }
+}

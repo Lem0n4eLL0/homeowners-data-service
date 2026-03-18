@@ -48,6 +48,15 @@ public record PersonalDataDto(
         String surname
 
 ) {
+        public static PersonalDataDto of(
+            UserProfileDto profile
+        ){
+                return new PersonalDataDto(
+                        profile.firstName(),
+                        profile.lastName(),
+                        profile.surname()
+                );
+        }
 
 
 

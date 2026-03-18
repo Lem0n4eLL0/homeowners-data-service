@@ -8,12 +8,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import ru.zeker.application.config.FeignConfig;
 import ru.zeker.application.domain.model.dto.response.application.PersonalDataDto;
+import ru.zeker.application.domain.model.dto.response.application.PropertyDto;
+import ru.zeker.application.domain.model.dto.response.application.UserProfileDto;
 import ru.zeker.common.headers.AppHeaders;
 
 /**
@@ -115,6 +118,9 @@ public interface HomeownersServiceClient {
 
     @GetMapping("/profile/me")
     public PersonalDataDto getPersonalData( @RequestHeader(AppHeaders.ACCOUNT_ID) UUID accountId);
+
+  @GetMapping("/profile/me")
+  public UserProfileDto getFullPersonalData( @RequestHeader(AppHeaders.ACCOUNT_ID) UUID accountId);
 
 
 

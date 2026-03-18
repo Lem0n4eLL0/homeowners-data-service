@@ -14,6 +14,8 @@ import ru.zeker.application.domain.model.dto.response.application.PersonalDataDt
 import ru.zeker.application.domain.model.dto.request.ApplicationRequest;
 import ru.zeker.application.domain.model.dto.response.application.ApplicationAllResponse;
 import ru.zeker.application.domain.model.dto.response.application.ApplicationResponse;
+import ru.zeker.application.domain.model.dto.response.application.PropertyDto;
+import ru.zeker.application.domain.model.dto.response.application.UserProfileDto;
 import ru.zeker.application.domain.model.entity.Application;
 import ru.zeker.application.domain.model.mapper.ApplicationMapper;
 import ru.zeker.application.domain.model.mapper.ApplicationRequestMapper;
@@ -38,25 +40,44 @@ public class ApplicationService {
     private final AutenticationServiceClient authClient;
 
     public List<ApplicationResponse> getMyApplications(UUID accountId){
-        try {
-            List<ApplicationResponse> applications= mapper.toModelList(repository.findAllByAccountId(accountId));
+        log.info("Получение объектов недвижимости пользователя для просмотра заявок по ним");
 
-            return applications;
+        UserProfileDto userProfile=client.getFullPersonalData(accountId);
 
-        } catch (DataAccessException e) {
-            log.error("Database error while fetching applications for accountId={}", accountId, e);
-            throw new ServiceException("Failed to fetch applications", HttpStatus.SERVICE_UNAVAILABLE, ErrorCode.DATABASE_ERROR);
+        List<Application> applications = new ArrayList<>();
+
+        List<ApplicationResponse> response=new ArrayList<>();
+
+        log.info("Поиск заявок по propertyId");
+        for(PropertyDto property: userProfile.properties()){
+           applications.addAll(repository.findAllByPropertyId(property.propertyId()));
         }
+
+        for(Application application:applications){
+
+            log.info("Получение personaldata - информации о создателе заявки");
+            PersonalDataDto personalData=client.getPersonalData(application.getAccountId());
+            PropertyDto property = PropertyService.getPropertyById(userProfile.properties(),application.getPropertyId());
+
+
+            log.info("Формирование ответа серверу");
+            response.add(ApplicationResponse.of(application, property, personalData));
+
+        }
+
+        return response;
 
 
     }
 
     public ApplicationAllResponse getApplication(UUID applicationId,UUID accountId){
+
         Application application = repository.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException(applicationId));
         if(!application.getAccountId().equals(accountId)){
             throw new ResourceNotFoundException(applicationId);
         }
+
 
         PersonalDataDto personalDataDto;
         try {
@@ -74,40 +95,25 @@ public class ApplicationService {
             );
         }
 
-//        log.info("Поиск объекта недвижимости из списка недвижимостей, к которым относится заявка");
-//        UserPropertyDto userPropertyDto = personalDataDto.properties()!= null
-//                ? personalDataDto.properties().stream()
-//                .filter(p -> application.getPropertyId() != null &&
-//                        application.getPropertyId().equals(p.propertyId()))
-//                .findFirst()
-//                .orElse(null)
-//                : null;
-//
-//        PersonalDataDto response=personalDataDto.withProperties(
-//                userPropertyDto != null ? List.of(userPropertyDto) : List.of()
-//        );
-
-//        AccountResponse contactsDto;
-//        try {
-//            contactsDto = authClient.getContacts();
-//        } catch (FeignException e) {
-//            log.error("Failed to fetch contacts from authentication-service: status={}", e.status(), e);
-//            throw new ServiceException(
-//                    "Не удалось получить контактные данные",
-//                    HttpStatus.BAD_GATEWAY,
-//                    ErrorCode.EXTERNAL_SERVER_ERROR
-//            );
-//        }
-
         return  ApplicationAllResponse.toApplicationAllResponse(application,
                 List.of(personalDataDto));
 
     }
+
 @Transactional
     public ApplicationResponse createApplication(ApplicationRequest applicationRequest,UUID accountId) {
+
+
         Application application = requestMapper.toEntity(applicationRequest);
+
         application.setAccountId(accountId);
+
         Application saved;
+
+        UserProfileDto profile=client.getFullPersonalData(accountId);
+        PropertyDto property = PropertyService.getPropertyById(profile.properties(),application.getPropertyId());
+        PersonalDataDto personalData = PersonalDataDto.of(profile);
+
         try {
             saved = repository.save(application);
         } catch (DataIntegrityViolationException e) {
@@ -124,7 +130,11 @@ public class ApplicationService {
                     ErrorCode.DATABASE_ERROR
             );
         }
-        return mapper.toModel(saved);
+    ApplicationResponse response = ApplicationResponse.of(application, property, personalData);
+
+        return response;
     }
+
+
 
 }

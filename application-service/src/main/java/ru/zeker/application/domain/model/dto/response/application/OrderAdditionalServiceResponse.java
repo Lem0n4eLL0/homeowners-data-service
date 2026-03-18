@@ -1,6 +1,8 @@
 package ru.zeker.application.domain.model.dto.response.application;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDateTime;
+import ru.zeker.application.domain.model.entity.OrderAdditional;
 import ru.zeker.application.domain.model.enums.Status;
 
 import java.util.UUID;
@@ -19,11 +21,10 @@ public record OrderAdditionalServiceResponse(
         UUID id,
 
         @Schema(
-                description = "Уникальный идентификатор объекта недвижимости",
-                example = "3c49f033-7242-4705-b643-d815334c9e4b",
-                requiredMode = Schema.RequiredMode.REQUIRED
+            description = "Объект недвижимости",
+            requiredMode = Schema.RequiredMode.REQUIRED
         )
-        UUID propertyId,
+        PropertyDto property,
 
         @Schema(
                 description = "Уникальный идентификатор заказанной услуги",
@@ -31,6 +32,16 @@ public record OrderAdditionalServiceResponse(
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         UUID additionalServiceId,
+        @Schema(
+            description = "Создатель заявки",
+            example = "firstName: Иван\n"
+                + "lastName: Иванов\n"
+                + "surName:Иванович" ,
+
+            requiredMode = Schema.RequiredMode.REQUIRED
+        )
+        PersonalDataDto personalDataDto,
+
 
         @Schema(
                 description = "Статус заказа",
@@ -38,5 +49,30 @@ public record OrderAdditionalServiceResponse(
                 requiredMode = Schema.RequiredMode.REQUIRED,
                 allowableValues = {"PENDING", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED"}
         )
-        Status status
-) {}
+        Status status,
+        LocalDateTime createdAt
+) {
+        /**
+         * Фабричный метод для создания DTO из сущности и дополнительных данных.
+         * Это заменяет необходимость писать длинный new Record(...) в сервисе.
+         *
+         * @param entity Сущность заказа из БД
+         * @param property DTO объекта недвижимости (уже заполненное)
+         * @param creator DTO данных создателя (уже заполненное)
+         * @return Готовый ответ для клиента
+         */
+        public static OrderAdditionalServiceResponse of(
+            OrderAdditional entity,
+            PropertyDto property,
+            PersonalDataDto creator
+        ) {
+                return new OrderAdditionalServiceResponse(
+                    entity.getId(),
+                    property,
+                    entity.getAdditionalServiceId(),
+                    creator,
+                    Status.PENDING,
+                    entity.getCreatedAt()
+                );
+        }
+}

@@ -10,4 +10,6 @@ import java.util.UUID;
 @Repository
 public interface OrderAdditionalServiceRepository extends JpaRepository<OrderAdditional, UUID> {
     public List<OrderAdditional> findAllByAccountId(UUID accountId);
+    public List<OrderAdditional> findAllByPropertyId(UUID propertyId);
+
 }

@@ -31,7 +31,7 @@ public class OrderAdditional extends BaseEntity {
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private Status status = Status.PENDING;
 
     @Override
     public final boolean equals(Object o) {

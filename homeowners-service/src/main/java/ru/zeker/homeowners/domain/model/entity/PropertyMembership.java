@@ -32,12 +32,10 @@ public class PropertyMembership extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "personal_data_id", nullable = false)
-    @ToString.Include
     private PersonalData personalData;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "property_id", nullable = false)
-    @ToString.Include
     private Property property;
 
     @Override

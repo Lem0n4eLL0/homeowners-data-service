@@ -157,7 +157,7 @@ public class SeedDataLoader implements ApplicationRunner {
 
     private String generatePersonalNumber() {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 12; i++) {
+        for (int i = 0; i < 10; i++) {
             sb.append(random.nextInt(10)); // цифра от 0 до 9
         }
         return sb.toString();

@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import ru.zeker.common.model.BaseEntity;
-
+@ToString(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "personal_account_services",
         uniqueConstraints = @UniqueConstraint(name = "uk_personal_account_service", columnNames = {"personal_account_id", "service_id"}))
@@ -23,7 +23,6 @@ import ru.zeker.common.model.BaseEntity;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 public class PersonalAccountService extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

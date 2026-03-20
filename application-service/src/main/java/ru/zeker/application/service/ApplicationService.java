@@ -79,22 +79,9 @@ public class ApplicationService {
             throw new ResourceNotFoundException(applicationId);
         }
 
-
         PersonalDataDto personalDataDto;
-        try {
-            log.info("Отправка запроса из application_service в homeowners_service для получения данных");
-            personalDataDto = client.getPersonalData(accountId);
-
-        } catch (FeignException e) {
-            log.error("Failed to fetch personal data from homeowners-service: status={}, body={}",
-                    e.status(), e.contentUTF8(), e);
-
-            throw new ServiceException(
-                    "Не удалось получить данные профиля",
-                    HttpStatus.BAD_GATEWAY,
-                    ErrorCode.EXTERNAL_SERVER_ERROR
-            );
-        }
+        log.info("Отправка запроса из application_service в homeowners_service для получения данных");
+        personalDataDto = client.getPersonalData(accountId);
 
         return  ApplicationAllResponse.toApplicationAllResponse(application,
                 List.of(personalDataDto));

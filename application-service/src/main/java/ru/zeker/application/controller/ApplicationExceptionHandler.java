@@ -2,6 +2,7 @@
 
 package ru.zeker.application.controller;
 
+import feign.FeignException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -44,23 +45,15 @@ public class ApplicationExceptionHandler extends GlobalExceptionHandler {
         log.warn("Сервис не найден id={}", ex.getId());
         return response;
     }
+    /**
+     * Ошибка отправки запроса к другому сервису
+     */
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<Map<String, Object>> handleFeignException(HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Couldn't get the data", request.getRequestURI(), request.getRequestId(), ErrorCode.EXTERNAL_SERVER_ERROR);
+    }
 
-//    /**
-//     * Доступ к услуге запрещён (бизнес-правила).
-//     */
-//    @ExceptionHandler(AccessDeniedException.class)
-//    public ResponseEntity<Map<String, Object>> handleAccessDenied(
-//            AccessDeniedException ex,
-//            HttpServletRequest request
-//    ) {
-//        return buildErrorResponse(
-//                HttpStatus.FORBIDDEN,
-//                ex.getMessage(),
-//                request.getRequestURI(),
-//                request.getRequestId(),
-//                ErrorCode.ACCESS_DENIED
-//        );
-//    }
+
 
     /**
      * Логирование с контекстом application-service.

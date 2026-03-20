@@ -61,6 +61,7 @@
         <module>authentication-service</module>
         <module>notification-service</module>
         <module>homeowners-service</module>
+        <module>application-service</module>
     </modules>
 
     <build>

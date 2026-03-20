@@ -51,6 +51,21 @@ spring:
                 - Path=/api/v${app.version}/profile/**
               filters:
                 - StripPrefix=2
+            # === APPLICATION SERVICE ===
+            - id: application-service-services
+              uri: http://application-service:8080
+              predicates:
+                - Path=/api/v${app.version}/services/**
+              filters:
+                - StripPrefix=2
+            - id: application-service-application
+              uri: http://application-service:8080
+              predicates:
+                - Path=/api/v${app.version}/applications/**
+              filters:
+                - StripPrefix=2
+
+
 
             # === Swagger passthrough ===
             - id: authentication-service-docs
@@ -93,6 +108,28 @@ spring:
                 auth-required: false
               order: -1
 
+            - id: application-service-docs
+              uri: http://application-service:8080
+              predicates:
+                - Path=/application-service/v3/api-docs/**
+              filters:
+                - StripPrefix=1
+              metadata:
+                auth-required: false
+              order: -1
+
+            - id: application-service-docs-swagger
+              uri: http://application-service:8080
+              predicates:
+                - Path=/application-service/swagger-ui.html
+              filters:
+                - StripPrefix=1
+              metadata:
+                auth-required: false
+              order: -1
+
+
+
 server:
   port: 8080
 
@@ -118,6 +155,9 @@ springdoc:
         url: /authentication-service/v3/api-docs
       - name: homeowners-service
         url: /homeowners-service/v3/api-docs
+      - name: application-service
+        url: /application-service/v3/api-docs
+
 
 # -----------------------------
 # Dev профиль — DEBUG

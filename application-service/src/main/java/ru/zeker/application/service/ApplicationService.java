@@ -72,6 +72,7 @@ public class ApplicationService {
 
     public ApplicationAllResponse getApplication(UUID applicationId,UUID accountId){
 
+        log.info("Поиск заявки по id в бд");
         Application application = repository.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException(applicationId));
         if(!application.getAccountId().equals(accountId)){
@@ -110,11 +111,16 @@ public class ApplicationService {
 
         Application saved;
 
+        log.info("Получение данных о пользователе");
+
         UserProfileDto profile=client.getFullPersonalData(accountId);
+
         PropertyDto property = PropertyService.getPropertyById(profile.properties(),application.getPropertyId());
+
         PersonalDataDto personalData = PersonalDataDto.of(profile);
 
         try {
+            log.info("Сохранение заявки в бд");
             saved = repository.save(application);
         } catch (DataIntegrityViolationException e) {
             throw new ServiceException(

@@ -139,22 +139,7 @@ public class OrderAdditionalServiceController {
                                     """)
                     )
             ),
-//            @ApiResponse(
-//                    responseCode = "409",
-//                    description = "Конфликт: заказ уже существует",
-//                    content = @Content(
-//                            mediaType = "application/json",
-//                            schema = @Schema(example = """
-//                                    {
-//                                      "timestamp": "2026-03-10T12:00:00",
-//                                      "status": 409,
-//                                      "errorCode": "ORDER_ALREADY_EXISTS",
-//                                      "message": "Заказ на эту услугу для данного объекта уже оформлен",
-//                                      "requestId": "abc-123"
-//                                    }
-//                                    """)
-//                    )
-//            ),
+
             @ApiResponse(
                     responseCode = "500",
                     description = "Внутренняя ошибка сервера",
@@ -199,7 +184,7 @@ public class OrderAdditionalServiceController {
     @Operation(
             summary = "Получить список заказанных услуг",
             description = """
-                    Возвращает список всех заказанных дополнительных услуг текущего пользователя.
+                    Возвращает список всех заказанных дополнительных услуг по всем недвижимостям пользователя.
                                         
                     **Использование:**
                     - Отображение истории заказов в личном кабинете
@@ -252,22 +237,6 @@ public class OrderAdditionalServiceController {
                                     """)
                     )
             ),
-//            @ApiResponse(
-//                    responseCode = "403",
-//                    description = "Доступ к данным запрещён",
-//                    content = @Content(
-//                            mediaType = "application/json",
-//                            schema = @Schema(example = """
-//                                    {
-//                                      "timestamp": "2026-03-10T12:00:00",
-//                                      "status": 403,
-//                                      "errorCode": "ACCESS_DENIED",
-//                                      "message": "Account-Id не соответствует токену",
-//                                      "requestId": "abc-123"
-//                                    }
-//                                    """)
-//                    )
-//            ),
             @ApiResponse(
                     responseCode = "500",
                     description = "Внутренняя ошибка сервера",
@@ -288,7 +257,7 @@ public class OrderAdditionalServiceController {
 
     @GetMapping("/my")
     public ResponseEntity<List<OrderAdditionalServiceResponse>> getMyOrderAdditionalServices(@RequestHeader(ACCOUNT_ID) UUID accountId){
-        log.info("Запрос на получение информации о заказе услуги");
+        log.info("Запрос на получение списка заказанных услуг");
         return ResponseEntity.ok(service.getMyOrders(accountId));
 
     }

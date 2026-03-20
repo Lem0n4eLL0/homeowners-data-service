@@ -96,7 +96,7 @@ public class AdditionalServiceController {
     })
     @GetMapping
     public ResponseEntity<List<AdditionalServiceResponse>> getAdditionalServices(){
-        log.info("Запрос на получение списка заявок");
+        log.info("Запрос на получение списка услуг");
         return ResponseEntity.ok(service.getAllAdditionalServices());
     }
     @Operation(

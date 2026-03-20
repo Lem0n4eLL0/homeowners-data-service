@@ -64,7 +64,7 @@ public class ApplicationController {
     @Operation(
             summary = "Получить список своих заявок",
             description = """
-                    Возвращает список всех заявок текущего пользователя.
+                    Возвращает список всех заявок по всем своим недвижимостям.
                                         
                     **Требования:**
                     - Заголовок `Account-Id` должен содержать валидный UUID
@@ -185,8 +185,7 @@ public class ApplicationController {
 
     }
     @Operation(
-            summary = "Получить список своих заявок пользователем ",
-            description = "Возвращает информацию "
+            summary = "Создать заявку"
     )
     @ApiResponses({
             @ApiResponse(

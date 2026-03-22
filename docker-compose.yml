@@ -120,6 +120,19 @@ services:
     networks:
       - internal
 
+  # === Portainer ===
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: always
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - internal
+
   # === API Gateway ===
   api-gateway:
     image: api-gateway:latest
@@ -279,3 +292,4 @@ volumes:
   redisdata:
   kafka_data:
   keys:
+  portainer_data:

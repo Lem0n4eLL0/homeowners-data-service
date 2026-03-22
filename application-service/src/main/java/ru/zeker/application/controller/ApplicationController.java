@@ -170,7 +170,7 @@ public class ApplicationController {
     })
 
     @GetMapping("/my/{id}")
-    public ResponseEntity<ApplicationAllResponse> getMyApplication(
+    public ResponseEntity<ApplicationResponse> getMyApplication(
             @Parameter(
                     description = "Уникальный идентификатор заявки",
                     required = true,

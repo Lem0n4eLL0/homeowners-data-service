@@ -114,7 +114,8 @@ services:
     command: |
       bash -c "
         kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic notification.smtp.verification --partitions 2 --replication-factor 1 &&
-        kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic notification.sms.verification --partitions 8 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic notification.sms.verification --partitions 8 --replication-factor 1 &&
+        kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic homeowners.accruals --partitions 4 --replication-factor 1
       "
     init: true
     networks:
@@ -247,6 +248,7 @@ services:
       POSTGRES_USERNAME: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      KAFKA_HOST: kafka:9092
     depends_on:
       postgres:
         condition: service_started

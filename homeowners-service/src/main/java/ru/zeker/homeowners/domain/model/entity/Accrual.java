@@ -23,7 +23,7 @@ import ru.zeker.common.model.BaseEntity;
 import ru.zeker.homeowners.domain.model.enums.PaidStatus;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
 
@@ -51,8 +51,8 @@ public class Accrual extends BaseEntity {
      * PostgreSQL tsrange
      */
     @Type(PostgreSQLRangeType.class)
-    @Column(name = "period", columnDefinition = "tsrange")
-    private Range<LocalDateTime> period;
+    @Column(name = "period", columnDefinition = "daterange")
+    private Range<LocalDate> period;
 
     @Column(name = "total_sum", nullable = false, precision = 19, scale = 2)
     private BigDecimal totalSum;

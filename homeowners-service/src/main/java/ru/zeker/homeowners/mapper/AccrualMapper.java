@@ -2,6 +2,7 @@ package ru.zeker.homeowners.mapper;
 
 import org.springframework.stereotype.Service;
 import ru.zeker.homeowners.domain.dto.response.AccrualResponse;
+import ru.zeker.homeowners.domain.dto.response.PeriodResponse;
 import ru.zeker.homeowners.domain.dto.response.ServiceResponse;
 import ru.zeker.homeowners.domain.model.entity.Accrual;
 
@@ -21,7 +22,10 @@ public class AccrualMapper {
                 .propertyId(accrual.getPersonalAccount().getProperty().getId())
                 .services(services)
                 .servicesDetails(accrual.getServicesDetails())
-                .period(accrual.getPeriod())
+                .period(new PeriodResponse(
+                        accrual.getPeriod().lower(),
+                        accrual.getPeriod().upper()
+                ))
                 .totalSum(accrual.getTotalSum())
                 .paidAmount(accrual.getPaidAmount())
                 .paidStatus(accrual.getPaidStatus())

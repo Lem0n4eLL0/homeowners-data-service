@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 018-convert-accruals-period-to-daterange
+      author: zeker
+      changes:
+        - comment: "Преобразуем колонку period из tsrange в daterange (LocalDate)"
+        - sql:
+            dbms: postgresql
+            sql: |
+              ALTER TABLE accruals
+              ALTER COLUMN period
+              TYPE daterange
+              USING daterange(
+                lower(period)::date,
+                upper(period)::date,
+                CASE 
+                  WHEN upper_inc(period) THEN '[]'
+                  ELSE '[)'
+                END
+              );

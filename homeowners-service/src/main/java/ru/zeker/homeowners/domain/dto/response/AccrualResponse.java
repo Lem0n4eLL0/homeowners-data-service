@@ -29,7 +29,7 @@ public record AccrualResponse(
         Map<String, ServiceDetails> servicesDetails,
 
         @Schema(description = "Период начисления")
-        Range<LocalDateTime> period,
+        PeriodResponse period,
 
         @Schema(description = "Сумма начисления", example = "1500.50")
         BigDecimal totalSum,
@@ -42,4 +42,5 @@ public record AccrualResponse(
 
         @Schema(description = "Дата создания", example = "2026-03-25T10:15:30")
         LocalDateTime createdAt
-) {}
+) {
+}

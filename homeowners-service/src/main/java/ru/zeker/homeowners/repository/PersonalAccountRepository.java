@@ -18,4 +18,6 @@ public interface PersonalAccountRepository extends JpaRepository<PersonalAccount
             "JOIN FETCH pa.property p " +
             "WHERE pa.personalNumber = :number")
     Optional<PersonalAccount> findByPersonalNumberWithDetails(@Param("number") String number);
+
+    Optional<PersonalAccount> findByPersonalNumberAndCompanyId(String personalNumber, UUID companyId);
 }

@@ -11,9 +11,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>application_service</artifactId>
+    <artifactId>application-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>application_service</name>
+    <name>application-service</name>
     <description>Application service for homeowners project</description>
 
     <properties>

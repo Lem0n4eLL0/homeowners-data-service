@@ -1,4 +1,3 @@
-// src/main/java/ru/zeker/homeowners/service/UserProfileService.java
 package ru.zeker.homeowners.service;
 
 import feign.FeignException;
@@ -22,7 +21,7 @@ import ru.zeker.homeowners.domain.model.entity.PersonalAccount;
 import ru.zeker.homeowners.domain.model.entity.PersonalData;
 import ru.zeker.homeowners.domain.model.entity.Property;
 import ru.zeker.homeowners.domain.model.entity.PropertyMembership;
-import ru.zeker.homeowners.exception.ProfileVerificationException;
+import ru.zeker.homeowners.exception.HomeownersException;
 import ru.zeker.homeowners.mapper.PersonalDataMapper;
 import ru.zeker.homeowners.mapper.PropertyMapper;
 import ru.zeker.homeowners.repository.PersonalAccountRepository;
@@ -51,7 +50,7 @@ public class UserProfileService {
 
         // === Проверяем, что профиль ещё не существует ===
         if (personalDataRepository.existsByAccountId(accountId)) {
-            throw ProfileVerificationException.profileAlreadyExists();
+            throw HomeownersException.profileAlreadyExists();
         }
 
         // === Создаем новый профиль ===
@@ -62,12 +61,12 @@ public class UserProfileService {
         // === Верификация объекта недвижимости ===
         PersonalAccount account = personalAccountRepository
                 .findByPersonalNumberWithDetails(request.personalAccountNumber())
-                .orElseThrow(ProfileVerificationException::accountNotFound);
+                .orElseThrow(HomeownersException::accountNotFound);
 
         if (!account.getCompany().isManagedByUs()) {
             log.warn("Лицевой счет {} принадлежит сторонней компании: {}",
                     request.personalAccountNumber(), account.getCompany().getName());
-            throw ProfileVerificationException.thirdPartyProvider();
+            throw HomeownersException.thirdPartyProvider();
         }
 
         Property property = account.getProperty();
@@ -77,7 +76,7 @@ public class UserProfileService {
         if (membershipRepository.existsByPersonalDataAndProperty(personalData, property)) {
             log.warn("Объект уже привязан: accountId={}, propertyId={}",
                     accountId, property.getId());
-            throw ProfileVerificationException.propertyAlreadyLinked();
+            throw HomeownersException.propertyAlreadyLinked();
         }
 
         personalData.getPropertyMemberships().add(PropertyMembership.builder()
@@ -88,9 +87,9 @@ public class UserProfileService {
         try {
             personalData = personalDataRepository.save(personalData);
         } catch (OptimisticLockingFailureException e) {
-            throw ProfileVerificationException.persistenceError("Конфликт версий данных, попробуйте снова");
+            throw HomeownersException.persistenceError("Конфликт версий данных, попробуйте снова");
         } catch (DataIntegrityViolationException e) {
-            throw ProfileVerificationException.persistenceError("Нарушение целостности данных");
+            throw HomeownersException.persistenceError("Нарушение целостности данных");
         }
 
         sendEmailVerification(accountId, request.email());
@@ -132,7 +131,7 @@ public class UserProfileService {
     ) {
         if (!matcher.test(expected, actual)) {
             logAddressMismatch(logField, expected, actual);
-            throw ProfileVerificationException.addressMismatch(displayName, expected, actual);
+            throw HomeownersException.addressMismatch(displayName, expected, actual);
         }
     }
 
@@ -144,7 +143,7 @@ public class UserProfileService {
     ) {
         if (!nullSafeAddressMatch(expected, actual)) {
             logAddressMismatch(logField, expected, actual);
-            throw ProfileVerificationException.addressMismatch(
+            throw HomeownersException.addressMismatch(
                     displayName,
                     StringUtils.defaultString(expected, "не указан"),
                     StringUtils.defaultString(actual, "не указан")
@@ -187,7 +186,7 @@ public class UserProfileService {
     @Transactional(readOnly = true)
     public UserProfileResponse getProfileResponse(UUID accountId) {
         PersonalData data = personalDataRepository.findByAccountId(accountId)
-                .orElseThrow(ProfileVerificationException::profileNotFound);
+                .orElseThrow(HomeownersException::profileNotFound);
         return buildProfileResponse(data, accountId);
     }
 
@@ -195,16 +194,16 @@ public class UserProfileService {
     @Transactional
     public UserProfileResponse updateProfile(UUID accountId, UserUpdateProfileRequest request) {
         PersonalData personalData = personalDataRepository.findByAccountId(accountId)
-                .orElseThrow(ProfileVerificationException::profileNotFound);
+                .orElseThrow(HomeownersException::profileNotFound);
 
         personalDataMapper.updateFromRequest(request, personalData);
 
         try {
             personalData = personalDataRepository.save(personalData);
         } catch (OptimisticLockingFailureException e) {
-            throw ProfileVerificationException.persistenceError("Конфликт версий данных при обновлении профиля");
+            throw HomeownersException.persistenceError("Конфликт версий данных при обновлении профиля");
         } catch (DataIntegrityViolationException e) {
-            throw ProfileVerificationException.persistenceError("Нарушение целостности данных при обновлении профиля");
+            throw HomeownersException.persistenceError("Нарушение целостности данных при обновлении профиля");
         }
 
         sendEmailVerification(accountId, request.email());
@@ -216,20 +215,20 @@ public class UserProfileService {
     @Transactional
     public UserPropertyResponse createProperty(UUID accountId, UserPropertyRequest request) {
         PersonalData personalData = personalDataRepository.findByAccountId(accountId)
-                .orElseThrow(ProfileVerificationException::profileNotFound);
+                .orElseThrow(HomeownersException::profileNotFound);
 
         PersonalAccount account = personalAccountRepository
                 .findByPersonalNumberWithDetails(request.personalAccountNumber())
-                .orElseThrow(ProfileVerificationException::accountNotFound);
+                .orElseThrow(HomeownersException::accountNotFound);
 
         if (!account.getCompany().isManagedByUs()) {
-            throw ProfileVerificationException.thirdPartyProvider();
+            throw HomeownersException.thirdPartyProvider();
         }
 
         Property property = account.getProperty();
 
         if (membershipRepository.existsByPersonalDataAndProperty(personalData, property)) {
-            throw ProfileVerificationException.propertyAlreadyLinked();
+            throw HomeownersException.propertyAlreadyLinked();
         }
 
         PropertyMembership membership = PropertyMembership.builder()
@@ -242,7 +241,7 @@ public class UserProfileService {
         try {
             personalDataRepository.save(personalData);
         } catch (OptimisticLockingFailureException | DataIntegrityViolationException e) {
-            throw ProfileVerificationException.persistenceError("Ошибка сохранения объекта недвижимости");
+            throw HomeownersException.persistenceError("Ошибка сохранения объекта недвижимости");
         }
 
         return propertyMapper.toDto(property, request.personalAccountNumber());
@@ -252,10 +251,10 @@ public class UserProfileService {
     @Transactional
     public UserPropertyResponse updateProperty(UUID accountId, UUID propertyId, UserPropertyRequest request) {
         PersonalData personalData = personalDataRepository.findByAccountId(accountId)
-                .orElseThrow(ProfileVerificationException::profileNotFound);
+                .orElseThrow(HomeownersException::profileNotFound);
 
         PropertyMembership membership = membershipRepository.findByPersonalDataAndPropertyId(personalData, propertyId)
-                .orElseThrow(() -> ProfileVerificationException.invalidInput("Объект недвижимости не найден для обновления"));
+                .orElseThrow(() -> HomeownersException.invalidInput("Объект недвижимости не найден для обновления"));
 
         Property property = membership.getProperty();
 
@@ -268,7 +267,7 @@ public class UserProfileService {
         try {
             membershipRepository.save(membership);
         } catch (OptimisticLockingFailureException | DataIntegrityViolationException e) {
-            throw ProfileVerificationException.persistenceError("Ошибка обновления объекта недвижимости");
+            throw HomeownersException.persistenceError("Ошибка обновления объекта недвижимости");
         }
 
         return propertyMapper.toDto(property, request.personalAccountNumber());
@@ -278,10 +277,10 @@ public class UserProfileService {
     @Transactional
     public UserPropertyResponse deleteProperty(UUID accountId, UUID propertyId) {
         PersonalData personalData = personalDataRepository.findByAccountId(accountId)
-                .orElseThrow(ProfileVerificationException::profileNotFound);
+                .orElseThrow(HomeownersException::profileNotFound);
 
         PropertyMembership membership = membershipRepository.findByPersonalDataAndPropertyId(personalData, propertyId)
-                .orElseThrow(() -> ProfileVerificationException.invalidInput("Объект недвижимости не найден для удаления"));
+                .orElseThrow(() -> HomeownersException.invalidInput("Объект недвижимости не найден для удаления"));
 
         Property property = membership.getProperty();
 
@@ -340,17 +339,17 @@ public class UserProfileService {
                     String body = e.contentUTF8().toLowerCase();
                     if (body.contains("already confirmed")) {
                         log.warn("Email {} уже подтвержден для accountId={}", email, accountId);
-                        throw ProfileVerificationException.emailAlreadyConfirmed();
+                        throw HomeownersException.emailAlreadyConfirmed();
                     } else if (body.contains("already used")) {
                         log.warn("Email {} уже используется другим аккаунтом", email);
-                        throw ProfileVerificationException.emailAlreadyUsed();
+                        throw HomeownersException.emailAlreadyUsed();
                     }
                 }
-                case 429 -> throw ProfileVerificationException.emailCooldown();
-                case 400 -> throw ProfileVerificationException.invalidEmailFormat();
+                case 429 -> throw HomeownersException.emailCooldown();
+                case 400 -> throw HomeownersException.invalidEmailFormat();
                 default -> {
                     log.error("Ошибка при запросе подтверждения email для {}: {}", email, e.contentUTF8(), e);
-                    throw ProfileVerificationException.emailVerificationFailed();
+                    throw HomeownersException.emailVerificationFailed();
                 }
             }
         }

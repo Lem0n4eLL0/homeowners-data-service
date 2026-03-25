@@ -59,6 +59,10 @@ public class PersonalAccount extends BaseEntity {
     @Builder.Default
     private Set<Meter> meters = new HashSet<>();
 
+    @OneToMany(mappedBy = "personalAccount", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<Accrual> accruals = new HashSet<>();
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;

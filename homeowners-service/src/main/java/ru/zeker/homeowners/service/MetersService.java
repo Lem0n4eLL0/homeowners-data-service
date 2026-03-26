@@ -38,10 +38,16 @@ public class MetersService {
   }
 
   public MetersResponse addMeter(MeterRequest request){
-    log.info("Сохранение счетчика");
+    log.info("Добавление счетчика");
     ServiceCode serviceCode =ServiceCode.valueOf(request.type().name());
-    PersonalAccount personalAccount = personalAccountRepository.findByPropertyIdAndServiceCode(request.propertyId(),serviceCode).get();
-    Meter meter = repository.save(mapper.toEntity(request,personalAccount));
+    log.info("Поиск лицевых счетов для типа счетчика");
+    List<PersonalAccount> personalAccounts = personalAccountRepository.findByPropertyIdAndServiceCode(request.propertyId(),serviceCode);
+
+    if(personalAccounts.isEmpty()){
+      throw HomeownersException.ServiceNotServicedException();
+    }
+    log.info("Сохранение счетчика");
+    Meter meter = repository.save(mapper.toEntity(request,personalAccounts.get(0)));
     return mapper.toModel(meter);
 
   }

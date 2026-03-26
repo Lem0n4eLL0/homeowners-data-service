@@ -28,7 +28,7 @@ public interface PersonalAccountRepository extends JpaRepository<PersonalAccount
         "JOIN pa.personalAccountServices pas " +
         "JOIN pas.service s " +
         "WHERE pa.property.id = :propertyId AND s.code = :serviceCode")
-    Optional<PersonalAccount> findByPropertyIdAndServiceCode(
+    List<PersonalAccount> findByPropertyIdAndServiceCode(
         @Param("propertyId") UUID propertyId,
         @Param("serviceCode") ServiceCode serviceCode
     );

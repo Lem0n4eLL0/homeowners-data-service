@@ -51,6 +51,12 @@ spring:
                 - Path=/api/v${app.version}/profile/**
               filters:
                 - StripPrefix=2
+            - id: homeowners-service-meters
+              uri: http://homeowners-service:8080
+              predicates:
+                - Path=/api/v${app.version}/meters/**
+              filters:
+                - StripPrefix=2
             # === APPLICATION SERVICE ===
             - id: application-service-services
               uri: http://application-service:8080

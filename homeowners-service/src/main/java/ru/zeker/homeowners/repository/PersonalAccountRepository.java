@@ -1,6 +1,7 @@
 package ru.zeker.homeowners.repository;
 
 
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,4 +19,5 @@ public interface PersonalAccountRepository extends JpaRepository<PersonalAccount
             "JOIN FETCH pa.property p " +
             "WHERE pa.personalNumber = :number")
     Optional<PersonalAccount> findByPersonalNumberWithDetails(@Param("number") String number);
+    List<PersonalAccount> findAllByPropertyId(UUID propertyId);
 }

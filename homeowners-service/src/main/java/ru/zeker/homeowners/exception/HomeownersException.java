@@ -27,6 +27,13 @@ public class HomeownersException extends BaseException {
                 HttpStatus.NOT_FOUND
         );
     }
+    public static HomeownersException meterNotFound() {
+        return new HomeownersException(
+            ErrorCode.METER_NOT_FOUNDED,
+            "Счетчик не найден в системе",
+            HttpStatus.NOT_FOUND
+        );
+    }
 
     /**
      * Счет найден, но принадлежит сторонней организации (isManagedByUs = false)

@@ -1,5 +1,6 @@
 package ru.zeker.homeowners.controller;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,13 +29,13 @@ public class MetersController {
   private final MetersService service;
 
   @GetMapping("/property/{propertyId}")
-  public ResponseEntity<List<MetersResponse>> getMeters(@PathVariable("propertyId")  UUID propertyId){
+  public ResponseEntity<List<MetersResponse>> getMeters(@PathVariable("propertyId") @NotNull(message = "Property ID is required")   UUID propertyId){
     return ResponseEntity.ok(service.getMeters(propertyId));
 
   }
 
   @PostMapping
-  public ResponseEntity<MetersResponse> addMeter(@RequestBody MeterRequest request){
+  public ResponseEntity<MetersResponse> addMeter(@Validated @RequestBody MeterRequest request){
     return ResponseEntity.ok(service.addMeter(request));
   }
 

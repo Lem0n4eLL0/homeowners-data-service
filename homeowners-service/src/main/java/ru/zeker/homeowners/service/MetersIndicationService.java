@@ -13,6 +13,7 @@ import ru.zeker.homeowners.domain.dto.response.MeterIndicationsResponse;
 import ru.zeker.homeowners.domain.model.entity.Meter;
 import ru.zeker.homeowners.domain.model.entity.MeterHistoryValue;
 import ru.zeker.homeowners.domain.model.entity.PersonalAccount;
+import ru.zeker.homeowners.exception.HomeownersException;
 import ru.zeker.homeowners.mapper.MeterIndicationsMapper;
 import ru.zeker.homeowners.mapper.MeterMapper;
 import ru.zeker.homeowners.repository.MeterHistoryRepository;
@@ -29,11 +30,9 @@ public class MetersIndicationService {
   private final MeterMapper meterMapper;
 
   public MeterIndicationsResponse addMeterIndications(MeterIndicationsRequest request){
-
-    MeterHistoryValue meterHistory = mapper.toEntity(request);
-    Meter meter = metersRepository.findById(request.meterId()).get();
-    meterHistory.setMeter(meter);
-    meterHistory.setDate(LocalDate.now());
+    Meter meter = metersRepository.findById(request.meterId())
+        .orElseThrow(() -> HomeownersException.meterNotFound());
+    MeterHistoryValue meterHistory = mapper.toEntity(request,meter);
 
     PersonalAccount personalAccount = personalAccountRepository.findById(meter.getPersonalAccount().getId()).get();
     MeterHistoryValue saved =  repository.save(meterHistory);
@@ -45,6 +44,9 @@ public class MetersIndicationService {
   public List<MeterIndicationsResponse> getHistoryIndications(UUID propertyId){
     List<MeterIndicationsResponse> response = new ArrayList<>();
     List<PersonalAccount> personalAccounts = personalAccountRepository.findAllByPropertyId(propertyId);
+
+    if(personalAccounts.isEmpty()) throw HomeownersException.accountNotFound();
+
     for(PersonalAccount personalAccount:personalAccounts){
       List<Meter> meters = metersRepository.findByPersonalAccountId(personalAccount.getId());
       for(Meter meter:meters){

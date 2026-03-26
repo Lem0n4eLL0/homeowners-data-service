@@ -2,6 +2,7 @@ package ru.zeker.homeowners.controller;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -27,13 +28,13 @@ public class MetersIndicationsController {
 
   private final MetersIndicationService service;
 @PostMapping
-  public ResponseEntity<MeterIndicationsResponse> addMeterIndications(@RequestBody
+  public ResponseEntity<MeterIndicationsResponse> addMeterIndications(@Validated @RequestBody
       MeterIndicationsRequest request){
     return ResponseEntity.ok(service.addMeterIndications(request));
 
   }
 @GetMapping("property/{propertyId}")
-  public ResponseEntity<List<MeterIndicationsResponse>> getHistoryIndications(@PathVariable("propertyId")  UUID propertyId){
+  public ResponseEntity<List<MeterIndicationsResponse>> getHistoryIndications(@PathVariable("propertyId") @NotNull(message = "Property ID is required")   UUID propertyId){
       return ResponseEntity.ok(service.getHistoryIndications(propertyId));
   }
 

@@ -10,6 +10,8 @@ import ru.zeker.homeowners.domain.dto.request.MeterRequest;
 import ru.zeker.homeowners.domain.dto.response.MetersResponse;
 import ru.zeker.homeowners.domain.model.entity.Meter;
 import ru.zeker.homeowners.domain.model.entity.PersonalAccount;
+import ru.zeker.homeowners.domain.model.enums.ServiceCode;
+import ru.zeker.homeowners.exception.HomeownersException;
 import ru.zeker.homeowners.mapper.MeterMapper;
 import ru.zeker.homeowners.repository.MetersRepository;
 import ru.zeker.homeowners.repository.PersonalAccountRepository;
@@ -24,7 +26,9 @@ public class MetersService {
 
   public List<MetersResponse> getMeters(UUID propertyId){
     List<MetersResponse> response = new ArrayList<>();
-    List<PersonalAccount> personalAccounts = personalAccountRepository.findAllByPropertyId(propertyId);
+     List<PersonalAccount> personalAccounts = personalAccountRepository.findAllByPropertyId(propertyId);
+
+    if(personalAccounts.isEmpty()) throw HomeownersException.accountNotFound();
 
     for(PersonalAccount personalAccount:personalAccounts){
       List<Meter> meters = repository.findByPersonalAccountId(personalAccount.getId());
@@ -34,25 +38,15 @@ public class MetersService {
   }
 
   public MetersResponse addMeter(MeterRequest request){
-    log.info("""
-     [METER_CREATE] Incoming request:
-       • personalAccountId: {}
-       • type: {}
-       • serialNumber: {}
-       • raw request: {}
-    """,
-        request.personalAccountId(),
-        request.type(),
-        request.serialNumber(),
-        request
-    );
-    PersonalAccount personalAccount = personalAccountRepository.findById(request.personalAccountId()).get();
+    log.info("Сохранение счетчика");
+    ServiceCode serviceCode =ServiceCode.valueOf(request.type().name());
+    PersonalAccount personalAccount = personalAccountRepository.findByPropertyIdAndServiceCode(request.propertyId(),serviceCode).get();
     Meter meter = repository.save(mapper.toEntity(request,personalAccount));
-    log.info("Mapped entity: serialNumber={}, type={}, personalAccount={}",
-        meter.getSerialNumber(), meter.getType(), meter.getPersonalAccount());
     return mapper.toModel(meter);
 
   }
+
+
 
 
 

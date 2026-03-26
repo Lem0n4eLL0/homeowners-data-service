@@ -1,0 +1,85 @@
+databaseChangeLog:
+  - changeSet:
+      id: 017-create-accruals-table
+      author: zeker
+
+      changes:
+        - createTable:
+            tableName: accruals
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_accruals
+
+              - column:
+                  name: personal_account_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: period
+                  type: tsrange
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: total_sum
+                  type: numeric(19,2)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: paid_amount
+                  type: numeric(19,2)
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: services_details
+                  type: jsonb
+
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: version
+                  type: bigint
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: accruals
+            baseColumnNames: personal_account_id
+            constraintName: fk_accruals_personal_account
+            referencedTableName: personal_accounts
+            referencedColumnNames: id
+            onDelete: CASCADE
+
+        - createIndex:
+            tableName: accruals
+            indexName: idx_accruals_personal_account
+            columns:
+              - column:
+                  name: personal_account_id
+
+        - createIndex:
+            tableName: accruals
+            indexName: idx_accruals_period
+            columns:
+              - column:
+                  name: period

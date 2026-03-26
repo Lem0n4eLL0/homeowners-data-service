@@ -18,9 +18,7 @@ import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
 import ru.zeker.common.model.BaseEntity;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -47,12 +45,10 @@ public class PersonalAccount extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "property_id", nullable = false)
-    @ToString.Include
     private Property property;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "company_id", nullable = false)
-    @ToString.Include
     private Company company;
 
     @OneToMany(mappedBy = "personalAccount", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -62,6 +58,10 @@ public class PersonalAccount extends BaseEntity {
     @OneToMany(mappedBy = "personalAccount", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<Meter> meters = new HashSet<>();
+
+    @OneToMany(mappedBy = "personalAccount", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<Accrual> accruals = new HashSet<>();
 
     @Override
     public final boolean equals(Object o) {

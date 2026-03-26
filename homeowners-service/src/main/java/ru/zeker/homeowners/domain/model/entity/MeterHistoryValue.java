@@ -37,7 +37,6 @@ public class MeterHistoryValue extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "meter_id", nullable = false)
-    @ToString.Include
     private Meter meter;
 
     @Column(name = "value", nullable = false, precision = 15, scale = 4)

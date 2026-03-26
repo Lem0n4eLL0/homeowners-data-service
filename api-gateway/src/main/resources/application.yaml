@@ -51,6 +51,13 @@ spring:
                 - Path=/api/v${app.version}/profile/**
               filters:
                 - StripPrefix=2
+            - id: homeowners-service-accrual
+              uri: http://homeowners-service:8080
+              predicates:
+                - Path=/api/v${app.version}/accrual/**
+              filters:
+                - StripPrefix=2
+
             - id: homeowners-service-meters
               uri: http://homeowners-service:8080
               predicates:
@@ -70,7 +77,6 @@ spring:
                 - Path=/api/v${app.version}/applications/**
               filters:
                 - StripPrefix=2
-
 
 
             # === Swagger passthrough ===

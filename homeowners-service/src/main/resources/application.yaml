@@ -5,6 +5,11 @@ spring:
     active: ${ACTIVE_PROFILE}
   application:
     name: homeowners-service
+  kafka:
+    properties:
+      retries: 10
+      retry.backoff.ms: 2000
+    bootstrap-servers: ${KAFKA_HOST}
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST}/${POSTGRES_DB}?currentSchema=homeowners_service
     driver-class-name: org.postgresql.Driver

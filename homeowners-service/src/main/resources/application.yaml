@@ -61,6 +61,8 @@ logging:
   level:
     root: DEBUG
     ru.zeker: DEBUG
+    org.apache.kafka: INFO
+    org.springframework.kafka: INFO
 
 # -----------------------------
 # Prod профиль — INFO

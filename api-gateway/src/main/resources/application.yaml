@@ -54,7 +54,7 @@ spring:
             - id: homeowners-service-accrual
               uri: http://homeowners-service:8080
               predicates:
-                - Path=/api/v${app.version}/accrual/**
+                - Path=/api/v${app.version}/accruals/**
               filters:
                 - StripPrefix=2
 

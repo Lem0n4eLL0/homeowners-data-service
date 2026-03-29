@@ -41,6 +41,14 @@ public class HomeownersException extends BaseException {
             HttpStatus.NOT_FOUND
         );
     }
+    public static HomeownersException propertyNotFound() {
+        return new HomeownersException(
+            ErrorCode.PROPERTY_NOT_FOUNDED,
+            "Объект недвижимости не найден в системе",
+            HttpStatus.NOT_FOUND
+        );
+    }
+
 
     /**
      * Счет найден, но принадлежит сторонней организации (isManagedByUs = false)

@@ -24,6 +24,7 @@ import ru.zeker.homeowners.domain.model.enums.MeterType;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import ru.zeker.homeowners.domain.model.enums.ServiceCode;
 
 @ToString(onlyExplicitlyIncluded = true)
 @Getter
@@ -44,7 +45,7 @@ public class Meter extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 50)
-    private MeterType type;
+    private ServiceCode type;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "personal_account_id", nullable = false)

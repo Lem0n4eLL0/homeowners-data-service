@@ -7,7 +7,7 @@ import java.util.UUID;
 import ru.zeker.homeowners.domain.model.entity.Meter;
 import ru.zeker.homeowners.domain.model.entity.MeterHistoryValue;
 import ru.zeker.homeowners.domain.model.entity.Property;
-
+@Schema(description = "Тело ответа истории показаний")
 public record MeterIndicationsResponse(
 
     @Schema(description = "id объекта истории показаний", example = "d019f65b-5c55-4070-a4d3-9e946513e2d7")

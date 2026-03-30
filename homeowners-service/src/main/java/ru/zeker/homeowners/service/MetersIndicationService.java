@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import ru.zeker.homeowners.domain.dto.request.MeterIndicationsRequest;
 import ru.zeker.homeowners.domain.dto.response.MeterIndicationsResponse;
@@ -16,6 +17,7 @@ import ru.zeker.homeowners.domain.model.entity.MeterHistoryValue;
 import ru.zeker.homeowners.domain.model.entity.PersonalAccount;
 import ru.zeker.homeowners.domain.model.entity.Property;
 import ru.zeker.homeowners.exception.HomeownersException;
+import ru.zeker.homeowners.exception.IndicationsAlreadyTransmiited;
 import ru.zeker.homeowners.mapper.MeterIndicationsMapper;
 import ru.zeker.homeowners.mapper.MeterMapper;
 import ru.zeker.homeowners.repository.MeterHistoryRepository;
@@ -59,6 +61,10 @@ public class MetersIndicationService {
    *       <ul>
    *         <li>Если не найден — выбрасывается {@code HomeownersException.meterNotFound()}</li>
    *       </ul>
+   *       <ul>
+   *    *    <li>Если подача показаний уже осуществлялась сегодня -  {@code HomeownersException.INdicationsAlreadyTransmitted()}</li>
+   *    *  </ul>
+   *
    *   </li>
    *   <li>Маппинг запроса ({@code MeterIndicationsRequest}) в сущность истории ({@code MeterHistoryValue})
    *       <ul>
@@ -67,7 +73,7 @@ public class MetersIndicationService {
    *   </li>
    *   <li>Загрузка лицевого счета ({@code PersonalAccount}) по ID, полученному из счетчика
    *       <ul>
-   *         <li>⚠️ Используется {@code .get()} без проверки {@code Optional} — если счет не найден,
+   *         <li>Используется {@code .get()} без проверки {@code Optional} — если счет не найден,
    *             будет выброшено {@code NoSuchElementException}</li>
    *       </ul>
    *   </li>
@@ -97,7 +103,8 @@ public class MetersIndicationService {
    * @throws HomeownersException если счетчик не найден
    * @throws HomeownersException если лицевой счет, связанный со счетчиком, не существует
    * @see MeterIndicationsMapper#toEntity(MeterIndicationsRequest, Meter)
-   * @see MeterIndicationsResponse#of(MeterHistoryValue, Property, ru.zeker.homeowners.domain.dto.response.MetersResponse)
+   * @see MeterIndicationsResponse#of(MeterHistoryValue, Property,
+   * ru.zeker.homeowners.domain.dto.response.MetersResponse)
    */
   public MeterIndicationsResponse addMeterIndications(MeterIndicationsRequest request) {
     Meter meter = metersRepository.findById(request.meterId())
@@ -107,7 +114,12 @@ public class MetersIndicationService {
     PersonalAccount personalAccount = personalAccountRepository
         .findById(meter.getPersonalAccount().getId())
         .get();
-    MeterHistoryValue saved = repository.save(meterHistory);
+    try {
+      MeterHistoryValue saved = repository.save(meterHistory);
+    } catch (DataIntegrityViolationException e) {
+      throw new IndicationsAlreadyTransmiited();
+    }
+
     MeterIndicationsResponse response = MeterIndicationsResponse.of(
         meterHistory,
         personalAccount.getProperty(),
@@ -126,7 +138,7 @@ public class MetersIndicationService {
    *   <li>Для каждого лицевого счета:
    *     <ul>
    *       <li>Загружаются все привязанные счетчики ({@code Meter})</li>
-   *       <li>Для каждого счетчика запрашивается <strong>одна</strong> запись истории
+   *       <li>Для каждого счетчика запрашиваются <strong>все</strong> записи истории
    *           через {@code repository.findByMeterId(meter.getId())}</li>
    *       <li>Если запись найдена (не {@code null}) — формируется ответ через {@code MeterIndicationsResponse.of()}</li>
    *     </ul>
@@ -134,7 +146,7 @@ public class MetersIndicationService {
    *   <li>Все ответы агрегируются в список и возвращаются</li>
    * </ol>
    *
-
+   *
    * <p><strong>Бизнес-правила:</strong></p>
    * <ul>
    *   <li>Возвращаются показания только для счетчиков, привязанных к лицевым счетам данной недвижимости</li>
@@ -157,7 +169,7 @@ public class MetersIndicationService {
    * @see MetersRepository#findByPersonalAccountId(UUID)
    * @see MeterHistoryRepository#findByMeterId(UUID)
    */
-  public List<MeterIndicationsResponse> getHistoryIndications(UUID propertyId,UUID accountId) {
+  public List<MeterIndicationsResponse> getHistoryIndications(UUID propertyId, UUID accountId) {
     List<MeterIndicationsResponse> response = new ArrayList<>();
     UserProfileResponse userProfileData = userProfileService.getProfileResponse(accountId);
     boolean hasAccess = userProfileData.properties().stream()
@@ -166,7 +178,8 @@ public class MetersIndicationService {
     if (!hasAccess) {
       throw HomeownersException.propertyNotFound();
     }
-    List<PersonalAccount> personalAccounts = personalAccountRepository.findAllByPropertyId(propertyId);
+    List<PersonalAccount> personalAccounts = personalAccountRepository.findAllByPropertyId(
+        propertyId);
 
     if (personalAccounts.isEmpty()) {
       throw HomeownersException.accountNotFound();
@@ -174,17 +187,18 @@ public class MetersIndicationService {
 
     for (PersonalAccount personalAccount : personalAccounts) {
       List<Meter> meters = metersRepository.findByPersonalAccountId(personalAccount.getId());
+
       for (Meter meter : meters) {
-        MeterHistoryValue meterHistoryValue = repository.findByMeterId(meter.getId());
-        if (!Objects.isNull(meterHistoryValue)) {
-          response.add(MeterIndicationsResponse.of(
-              meterHistoryValue,
-              personalAccount.getProperty(),
-              meterMapper.toModel(meter)
-          ));
-        }
+        repository.findByMeterId(meter.getId())
+            .forEach(history -> response.add(MeterIndicationsResponse.of(
+                history,
+                personalAccount.getProperty(),
+                meterMapper.toModel(meter)
+            )));
       }
+
     }
     return response;
   }
 }
+

@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Data
@@ -14,7 +16,11 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 @Schema(name = "ServiceDetails", description = "Детали начисления по одной услуге")
-public class ServiceDetails {
+public class ServiceDetails implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     @NotNull
     @Schema(description = "Сумма по услуге", required = true, example = "500.50")
     private BigDecimal amount;

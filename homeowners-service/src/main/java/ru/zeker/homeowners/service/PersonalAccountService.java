@@ -18,7 +18,7 @@ public class PersonalAccountService {
 
     public PersonalAccount getByNumberAndCompanyId(String number, UUID companyId) {
         return repository.findByPersonalNumberAndCompanyId(number, companyId)
-                .orElseThrow(HomeownersException::accountNotFound);
+                .orElse(null);
     }
 
 

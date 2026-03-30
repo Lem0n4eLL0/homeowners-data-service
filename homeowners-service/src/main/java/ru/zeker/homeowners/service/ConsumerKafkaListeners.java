@@ -30,10 +30,14 @@ public class ConsumerKafkaListeners {
             log.info("Received accrual event: {}", event);
             PersonalAccount account = personalAccountService.getByNumberAndCompanyId(
                     event.accountNumber(), event.companyId());
+            if (account == null) {
+                log.warn("Account not found, skipping event: {}", event);
+                return;
+            }
             Accrual accrual = accrualService.createFromEvent(event, account);
             log.info("Accrual processed successfully, accrualId={}", accrual.getId());
         } catch (Exception e) {
-            log.error("Accrual event error {}", e.getMessage());
+            log.error("Accrual event error", e);
             throw e;
         }
     }

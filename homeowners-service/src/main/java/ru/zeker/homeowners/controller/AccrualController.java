@@ -24,7 +24,7 @@ import ru.zeker.homeowners.service.AccrualService;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/accrual")
+@RequestMapping("/accruals")
 @RequiredArgsConstructor
 @Validated
 @Tag(name = "Accruals", description = "API для работы с начислениями пользователя")
@@ -41,7 +41,7 @@ public class AccrualController {
             @ApiResponse(responseCode = "200", description = "Успешно возвращены начисления"),
             @ApiResponse(responseCode = "400", description = "Некорректные параметры запроса"),
     })
-    @GetMapping("/me")
+    @GetMapping
     public ResponseEntity<Page<AccrualResponse>> getAccruals(
             @RequestHeader(AppHeaders.ACCOUNT_ID) @NotNull UUID accountId,
             @Parameter(description = "Параметры пагинации и сортировки")

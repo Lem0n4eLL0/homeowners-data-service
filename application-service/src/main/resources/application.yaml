@@ -59,10 +59,8 @@ springdoc:
 
 # Кастомные настройки приложения
 app:
-  service-name: application-service
-  company-name: ${COMPANY_NAME:Zeker}
   domain: ${API_DOMAIN:http://localhost:8080}
-  version: 1.0.0
+  version: 1
 
 
 

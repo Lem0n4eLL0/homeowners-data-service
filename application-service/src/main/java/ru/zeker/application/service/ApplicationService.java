@@ -70,7 +70,7 @@ public class ApplicationService {
 
     }
 
-    public ApplicationAllResponse getApplication(UUID applicationId,UUID accountId){
+    public ApplicationResponse getApplication(UUID applicationId,UUID accountId){
 
         log.info("Поиск заявки по id в бд");
         Application application = repository.findById(applicationId)
@@ -79,12 +79,11 @@ public class ApplicationService {
             throw new ResourceNotFoundException(applicationId);
         }
 
-        PersonalDataDto personalDataDto;
         log.info("Отправка запроса из application_service в homeowners_service для получения данных");
-        personalDataDto = client.getPersonalData(accountId);
+        UserProfileDto profile = client.getFullPersonalData(accountId);
+        PropertyDto property = PropertyService.getPropertyById(profile.properties(),application.getPropertyId());
 
-        return  ApplicationAllResponse.toApplicationAllResponse(application,
-                List.of(personalDataDto));
+        return ApplicationResponse.of(application,property,PersonalDataDto.of(profile));
 
     }
 

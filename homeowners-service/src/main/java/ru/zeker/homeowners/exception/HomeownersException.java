@@ -27,6 +27,28 @@ public class HomeownersException extends BaseException {
                 HttpStatus.NOT_FOUND
         );
     }
+    public static HomeownersException ServiceNotServicedException() {
+        return new HomeownersException(
+            ErrorCode.SERVICE_NOT_SERVICES,
+            "Эта услуга не обслуживается",
+            HttpStatus.NOT_FOUND
+        );
+    }
+    public static HomeownersException meterNotFound() {
+        return new HomeownersException(
+            ErrorCode.METER_NOT_FOUNDED,
+            "Счетчик не найден в системе",
+            HttpStatus.NOT_FOUND
+        );
+    }
+    public static HomeownersException propertyNotFound() {
+        return new HomeownersException(
+            ErrorCode.PROPERTY_NOT_FOUNDED,
+            "Объект недвижимости не найден в системе",
+            HttpStatus.NOT_FOUND
+        );
+    }
+
 
     /**
      * Счет найден, но принадлежит сторонней организации (isManagedByUs = false)

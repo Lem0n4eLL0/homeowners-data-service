@@ -51,7 +51,7 @@ import static ru.zeker.common.headers.AppHeaders.ACCOUNT_ID;
 
 @Validated
 @RestController
-@RequestMapping("/application")
+@RequestMapping("/applications")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(

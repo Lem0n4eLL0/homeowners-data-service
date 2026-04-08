@@ -64,10 +64,10 @@ public class HomeownersException extends BaseException {
     /**
      * Адрес не совпадает с реестром
      */
-    public static HomeownersException addressMismatch(String field, String expected, String provided) {
+    public static HomeownersException addressMismatch() {
         return new HomeownersException(
                 ErrorCode.ADDRESS_MISMATCH,
-                String.format("Поле '%s' не совпадает. В реестре: '%s', вы ввели: '%s'", field, expected, provided),
+                "Некорректные данные",
                 HttpStatus.BAD_REQUEST
         );
     }

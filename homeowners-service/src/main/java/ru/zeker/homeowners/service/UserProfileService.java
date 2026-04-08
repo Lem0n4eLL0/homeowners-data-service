@@ -100,54 +100,44 @@ public class UserProfileService {
     private void validateAddress(Property property, UserProfileVerifyRequest request) {
 
         validateField("street",
-                "Улица",
                 property.getStreet(),
                 request.street(),
                 AddressNormalizer::matches);
 
         validateField("houseNumber",
-                "Дом",
                 property.getHouseNumber(),
                 request.houseNumber(),
                 AddressNormalizer::matches);
 
         validateOptionalField("corpus",
-                "Корпус",
                 property.getCorpus(),
                 request.corpus());
 
         validateOptionalField("flatNumber",
-                "Квартира",
                 property.getFlatNumber(),
                 request.flatNumber());
     }
 
     private void validateField(
             String logField,
-            String displayName,
             String expected,
             String actual,
             BiPredicate<String, String> matcher
     ) {
         if (!matcher.test(expected, actual)) {
             logAddressMismatch(logField, expected, actual);
-            throw HomeownersException.addressMismatch(displayName, expected, actual);
+            throw HomeownersException.addressMismatch();
         }
     }
 
     private void validateOptionalField(
             String logField,
-            String displayName,
             String expected,
             String actual
     ) {
         if (!nullSafeAddressMatch(expected, actual)) {
             logAddressMismatch(logField, expected, actual);
-            throw HomeownersException.addressMismatch(
-                    displayName,
-                    StringUtils.defaultString(expected, "не указан"),
-                    StringUtils.defaultString(actual, "не указан")
-            );
+            throw HomeownersException.addressMismatch();
         }
     }
 

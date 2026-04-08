@@ -16,6 +16,7 @@ import ru.zeker.application.domain.model.dto.response.application.PersonalDataDt
 import ru.zeker.application.domain.model.dto.response.application.PropertyDto;
 import ru.zeker.application.domain.model.dto.response.application.UserProfileDto;
 import ru.zeker.application.domain.model.entity.OrderAdditional;
+import ru.zeker.application.domain.model.enums.Status;
 import ru.zeker.application.domain.model.mapper.OrderApplicationRequestMapper;
 import ru.zeker.application.domain.model.mapper.OrderApplicationResponseMapper;
 import ru.zeker.application.exceptions.ServiceException;
@@ -41,6 +42,7 @@ public class OrderAdditionalService {
 
     OrderAdditional orderAdditional = mapper.toEntity(order);
     orderAdditional.setAccountId(accountId);
+    orderAdditional.setStatus(Status.PENDING);
     OrderAdditional saved;
 
     try {

@@ -17,6 +17,7 @@ import ru.zeker.application.domain.model.dto.response.application.ApplicationRes
 import ru.zeker.application.domain.model.dto.response.application.PropertyDto;
 import ru.zeker.application.domain.model.dto.response.application.UserProfileDto;
 import ru.zeker.application.domain.model.entity.Application;
+import ru.zeker.application.domain.model.enums.Status;
 import ru.zeker.application.domain.model.mapper.ApplicationMapper;
 import ru.zeker.application.domain.model.mapper.ApplicationRequestMapper;
 import ru.zeker.application.exceptions.ResourceNotFoundException;
@@ -94,6 +95,7 @@ public class ApplicationService {
         Application application = requestMapper.toEntity(applicationRequest);
 
         application.setAccountId(accountId);
+        application.setStatus(Status.PENDING);
 
         Application saved;
 

@@ -135,6 +135,7 @@ public class ApplicationController {
                     )
             )
     })
+    //
     @GetMapping("/my")
     public ResponseEntity<List<ApplicationResponse>> getMyApplications(@Parameter(
             description = "Уникальный идентификатор аккаунта",

@@ -274,7 +274,7 @@ public class ProfileController {
     })
     public ResponseEntity<UserPropertyResponse> updateProperty(
             @RequestHeader(ACCOUNT_ID) UUID accountId,
-            @PathVariable UUID id,
+            @PathVariable("id") UUID id,
             @RequestBody @Valid UserPropertyRequest request
     ) {
         UserPropertyResponse response = profileService.updateProperty(accountId, id, request);
@@ -290,7 +290,7 @@ public class ProfileController {
     })
     public ResponseEntity<UserPropertyResponse> deleteProperty(
             @RequestHeader(ACCOUNT_ID) UUID accountId,
-            @PathVariable UUID id
+            @PathVariable("id") UUID id
     ) {
         UserPropertyResponse response = profileService.deleteProperty(accountId, id);
         return ResponseEntity.ok(response);

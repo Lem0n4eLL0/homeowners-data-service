@@ -183,7 +183,7 @@ public class AdditionalServiceController {
                     )
             )
     })
-
+//
     @GetMapping("/{id}")
     public ResponseEntity<AdditionalServiceInfoResponse> getAdditionalServices(@PathVariable("id") UUID additionalServiceId){
         log.info("Получение подробной информации о услуге");

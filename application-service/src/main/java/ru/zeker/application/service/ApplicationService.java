@@ -95,7 +95,8 @@ public class ApplicationService {
         Application application = requestMapper.toEntity(applicationRequest);
 
         application.setAccountId(accountId);
-        application.setStatus(Status.PENDING);
+        application.setStatus(Status.ACCEPTED);
+        log.info("Статус заявки "+application.getStatus());
 
         Application saved;
 
@@ -124,7 +125,7 @@ public class ApplicationService {
                     ErrorCode.DATABASE_ERROR
             );
         }
-    ApplicationResponse response = ApplicationResponse.of(application, property, personalData);
+    ApplicationResponse response = ApplicationResponse.of(saved, property, personalData);
 
         return response;
     }

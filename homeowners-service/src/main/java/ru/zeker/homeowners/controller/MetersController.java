@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.zeker.homeowners.domain.dto.request.MeterRequest;
+import ru.zeker.homeowners.domain.dto.response.MeterIndicationsResponse;
 import ru.zeker.homeowners.domain.dto.response.MetersResponse;
+import ru.zeker.homeowners.service.MetersIndicationService;
 import ru.zeker.homeowners.service.MetersService;
 
 import java.util.List;
@@ -37,6 +39,7 @@ import java.util.UUID;
 public class MetersController {
 
   private final MetersService service;
+  private final MetersIndicationService metersIndicationService;
 
   @PostMapping
   @Operation(
@@ -302,5 +305,128 @@ public class MetersController {
       @RequestHeader("Account-Id") UUID accountId
   ) {
     return ResponseEntity.ok(service.getMeters(propertyId,accountId));
+  }
+  @GetMapping("/history")
+  @Operation(
+      summary = "Получение истории показаний для объекта недвижимости",
+      description = """
+          Возвращает историю всех переданных показаний для счетчиков, привязанных к указанной недвижимости.
+
+          """,
+      tags = {"Meters Indications API"}
+  )
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "200",
+          description = "История показаний успешно получена",
+          content = @Content(
+              mediaType = "application/json",
+              schema = @Schema(implementation = MeterIndicationsResponse.class),
+              examples = @ExampleObject(
+                  name = "success_list",
+                  value = """
+                      [
+                        {
+                          "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567890",
+                          "Meter": {
+                            "meterId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                            "meterType": "HOT_WATER",
+                          
+                            "serialNumber": "WTR-2026-001239",
+                          }
+                          "value": 1250.50,
+                         
+                          "createdAt": "2026-03-26",
+                          
+                        }
+                        
+                      ]
+                      """
+              )
+          )
+      ),
+      @ApiResponse(
+          responseCode = "400",
+          description = "Некорректный формат ID недвижимости",
+          content = @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(
+                  name = "invalid_uuid",
+                  value = """
+                      {
+                        "timestamp": "2026-03-26T21:30:00Z",
+                        "status": 400,
+                        "errorCode": "VALIDATION_FAILED",
+                        "message": "Property ID is required"
+                      }
+                      """
+              )
+          )
+      ),
+      @ApiResponse(
+          responseCode = "404",
+          description = "Недвижимость не найдена",
+          content = @Content(
+              mediaType = "application/json",
+              examples = {
+                  @ExampleObject(
+                      name = "property_not_found",
+                      summary = "Недвижимость не найдена",
+                      value = """
+                          {
+                            "timestamp": "2026-03-26T21:30:00Z",
+                            "status": 404,
+                            "errorCode": "PROPERTY_NOT_FOUND",
+                            "message": "Недвижимость с указанным ID не найдена"
+                          }
+                          """
+                  ),
+
+              }
+          )
+      ),
+      @ApiResponse(
+          responseCode = "403",
+          description = "Доступ запрещён (пользователь не владеет недвижимостью)",
+          content = @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(
+                  name = "access_denied",
+                  summary = "Пользователь не имеет прав на просмотр истории для этой недвижимости",
+                  value = """
+                      {
+                        "timestamp": "2026-03-26T21:30:00Z",
+                        "status": 403,
+                        "errorCode": "ACCESS_DENIED",
+                        "message": "У вас нет прав на просмотр показаний для данной недвижимости"
+                      }
+                      """
+              )
+          )
+      ),
+      @ApiResponse(
+          responseCode = "500",
+          description = "Внутренняя ошибка сервера",
+          content = @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(
+                  name = "internal_error",
+                  value = """
+                      {
+                        "timestamp": "2026-03-26T21:30:00Z",
+                        "status": 500,
+                        "errorCode": "INTERNAL_SERVER_ERROR",
+                        "message": "An internal server error occurred. Please try again later"
+                      }
+                      """
+              )
+          )
+      )
+  })
+  public ResponseEntity<List<MeterIndicationsResponse>> getHistoryIndications(
+      @Parameter(description = "UUID объекта недвижимости", required = true)
+      @RequestHeader("Account-Id") UUID accountId
+  ) {
+    return ResponseEntity.ok(metersIndicationService.getHistoryIndications(accountId));
   }
 }

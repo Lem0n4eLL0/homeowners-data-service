@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import ru.zeker.homeowners.domain.dto.request.MeterIndicationsRequest;
 import ru.zeker.homeowners.domain.dto.response.MeterIndicationsResponse;
 import ru.zeker.homeowners.domain.dto.response.UserProfileResponse;
+import ru.zeker.homeowners.domain.dto.response.UserPropertyResponse;
 import ru.zeker.homeowners.domain.model.entity.Meter;
 import ru.zeker.homeowners.domain.model.entity.MeterHistoryValue;
 import ru.zeker.homeowners.domain.model.entity.PersonalAccount;
@@ -162,42 +163,39 @@ public class MetersIndicationService {
    *   <li>{@code org.springframework.dao.DataAccessResourceFailureException} — при проблемах с подключением к БД</li>
    * </ul>
    *
-   * @param propertyId UUID объекта недвижимости
    * @return список DTO с историей показаний (максимум одна запись на каждый счетчик)
    * @throws HomeownersException если не найдено ни одного лицевого счета для недвижимости
    * @see PersonalAccountRepository#findAllByPropertyId(UUID)
    * @see MetersRepository#findByPersonalAccountId(UUID)
    * @see MeterHistoryRepository#findByMeterId(UUID)
    */
-  public List<MeterIndicationsResponse> getHistoryIndications(UUID propertyId, UUID accountId) {
+  public List<MeterIndicationsResponse> getHistoryIndications(UUID accountId) {
     List<MeterIndicationsResponse> response = new ArrayList<>();
     UserProfileResponse userProfileData = userProfileService.getProfileResponse(accountId);
-    boolean hasAccess = userProfileData.properties().stream()
-        .anyMatch(property -> property.propertyId().equals(propertyId));
+    for(UserPropertyResponse property:userProfileData.properties()){
+      List<PersonalAccount> personalAccounts = personalAccountRepository.findAllByPropertyId(
+          property.propertyId());
 
-    if (!hasAccess) {
-      throw HomeownersException.propertyNotFound();
-    }
-    List<PersonalAccount> personalAccounts = personalAccountRepository.findAllByPropertyId(
-        propertyId);
+      if (personalAccounts.isEmpty()) {
+        throw HomeownersException.accountNotFound();
+      }
 
-    if (personalAccounts.isEmpty()) {
-      throw HomeownersException.accountNotFound();
-    }
+      for (PersonalAccount personalAccount : personalAccounts) {
+        List<Meter> meters = metersRepository.findByPersonalAccountId(personalAccount.getId());
 
-    for (PersonalAccount personalAccount : personalAccounts) {
-      List<Meter> meters = metersRepository.findByPersonalAccountId(personalAccount.getId());
+        for (Meter meter : meters) {
+          repository.findByMeterId(meter.getId())
+              .forEach(history -> response.add(MeterIndicationsResponse.of(
+                  history,
+                  personalAccount.getProperty(),
+                  meterMapper.toModel(meter)
+              )));
+        }
 
-      for (Meter meter : meters) {
-        repository.findByMeterId(meter.getId())
-            .forEach(history -> response.add(MeterIndicationsResponse.of(
-                history,
-                personalAccount.getProperty(),
-                meterMapper.toModel(meter)
-            )));
       }
 
     }
+
     return response;
   }
 }
